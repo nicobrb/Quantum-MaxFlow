@@ -1,0 +1,8 @@
+/venv/
+/.idea
+report/*
+!report/*.tex
+!report/*.pdf
+presentation/*
+!presentation/*.tex
+!presentation/*.pdf
