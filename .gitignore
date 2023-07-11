@@ -3,6 +3,7 @@
 report/*
 !report/*.tex
 !report/*.pdf
+!report/*.bib
 presentation/*
 !presentation/*.tex
 !presentation/*.pdf
