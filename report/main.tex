@@ -8,7 +8,7 @@
 \usepackage{float}
 
 \author{Nicola Barbaro (1070668)\\Mario Bifulco (881727)}
-\title{Progetto OC - MaxFlow QUBO}
+\title{Progetto OC - \emph{MaxFlow} QUBO}
 \date{A.A. 2022/2023}
 
 \begin{document}
@@ -126,7 +126,7 @@ Per risolvere problemi espressi tramite la programmazione lineare utilizzando un
 \end{center}
 \end{figure}
 
-La mappatura viene effettuata mediante l'utilizzo dell'algoritmo di \emph{minor-embedding} che preserva le relazioni aggiungendo eventualmente nuovi nodi se necessario. Pur appertenendo alla classe NP-complete tale algoritmo, viene risolto in modo efficiente nel caso medio, rendendolo quindi valido nell'utilizzo pratico.
+La mappatura viene effettuata mediante l'utilizzo dell'algoritmo \emph{minor embedding} che preserva le relazioni aggiungendo eventualmente nuovi nodi se necessario. Pur appertenendo alla classe NP-complete tale algoritmo, viene risolto in modo efficiente nel caso medio, rendendolo quindi valido nell'utilizzo pratico.
 
 Ci sono alcuni punti critici da considerare in questo approccio computazionale:
 
@@ -164,19 +164,19 @@ Il formalismo dei modelli QUBO offre un approccio flessibile per la risoluzione 
 
 \subsection{Simulated Annealing}
 
-L'algoritmo del Simulated Annealing fornisce una prospettiva intuitiva sul funzionamento di un processore quantistico adiabatico, QCPU.
+L'algoritmo \emph{Simulated Annealing} fornisce una prospettiva intuitiva sul funzionamento di un processore quantistico adiabatico, QCPU.
 
-L'obiettivo di questo algoritmo è raggiungere lo stato finale attraverso un cammino casuale, Random Walk, attraverso tutti i possibili stati del sistema. La selezione dei passi da compiere è influenzata dalla probabilità che varia nel tempo e determina se accettare o meno le variazioni energetiche del sistema fisico su cui si sta operando.
+L'obiettivo di questo algoritmo è raggiungere lo stato finale attraverso un cammino casuale, definito \emph{Random Walk}, esplorando tutti i possibili stati del sistema. La selezione dei passi da compiere è influenzata dalla probabilità che varia nel tempo e determina se accettare o meno le variazioni energetiche del sistema fisico su cui si sta operando.
 
-Nell'implementazione di questo algoritmo, vengono utilizzati due attributi fondamentali: l'insieme degli stati adiacenti a un dato nodo e l'energia associata a tale nodo, questi parametri influenzano la sequenza di passi che porta al cammino e dunque allo stato finale.
+Nell'implementazione di questo algoritmo, vengono utilizzati due attributi fondamentali: l'insieme degli stati adiacenti a un dato nodo e l'energia associata a tale nodo. Questi parametri influenzano la sequenza di passi che porta al cammino e, dunque, allo stato finale.
 
-Durante l'esecuzione dell'algoritmo, un parametro cruciale è rappresentato dalla temperatura, che può decrescere secondo diverse funzioni, più o meno rapidamente, con la diminuzione della temperatura si otterrà una conseguente stabilizzazione su uno degli stati, che quindi rappresenterà la risposta.
+Durante l'esecuzione dell'algoritmo, un parametro cruciale è rappresentato dalla temperatura che può decrescere secondo diverse funzioni, più o meno rapidamente. La diminuzione della temperatura comporta una minor propensione al cambio di stato, fino alla stabilizzazione del sistema sulla risposta.
 
-\subsubsection*{Formalizzazione dell'algoritmo del Simulated Annealing}
+\subsubsection*{Formalizzazione dell'algoritmo \emph{Simulated Annealing}}
 
 Sia $G=(V,E)$ un grafo rappresentante il sistema fisico di interesse, dove $V$ rappresenta l'insieme dei nodi e $E$ l'insieme degli archi. Ogni nodo $v \in V$ ha associata un'energia $E(v)$, mentre l'insieme degli adiacenti di un nodo $v$ è indicato con $N(v)$.
 
-L'algoritmo del Simulated Annealing può essere descritto attraverso i seguenti passaggi:
+L'algoritmo \emph{Simulated Annealing} può essere descritto attraverso i seguenti passaggi:
 
 \begin{enumerate}
     \item Inizializzazione: si assegna a ogni nodo del grafo una configurazione casuale iniziale e si fissa una temperatura iniziale $T$.
@@ -193,14 +193,14 @@ L'algoritmo del Simulated Annealing può essere descritto attraverso i seguenti 
 
 Durante l'esecuzione dell'algoritmo, la temperatura $T$ viene ridotta nel tempo seguendo una specifica funzione, che dipende dal problema e dall'obiettivo dell'ottimizzazione.
 
-L'algoritmo del Simulated Annealing rappresenta un importante strumento per l'esplorazione degli spazi di ricerca complessi e ha trovato applicazioni significative nella risoluzione di problemi di ottimizzazione e nell'ambito della computazione quantistica adiabatica.
+Tale algoritmo rappresenta un importante strumento per l'esplorazione degli spazi di ricerca complessi e ha trovato applicazioni significative nella risoluzione di problemi di ottimizzazione e nell'ambito della computazione quantistica adiabatica.
 
-È importante notare che l'algoritmo del Simulated Annealing può essere implementato anche su processori quantistici adiabatici, sfruttando le peculiarità della computazione quantistica per ottenere potenziali vantaggi prestazionali.
+È importante notare, inoltre, che l'algoritmo può essere implementato anche su processori quantistici adiabatici, sfruttando le peculiarità della computazione quantistica per ottenere potenziali vantaggi prestazionali.
 
 \section{Min Cut come problema QUBO}
 
 \subsection{Inquadramento del problema}
-Come visto nella sezione ??? il problema MinCut è espresso come:
+Come visto nella sezione ??? il problema \emph{MinCut} è espresso come:
 \begin{center}
 \begin{table}[H]
     \centering
@@ -239,18 +239,18 @@ La strategia adottata consiste nel convertire ogni variabile di slack utilizzand
 
 Per aggiungere un numero appropriato di variabili binarie, è necessario stimare il valore massimo che le variabili di slack possono assumere. A tal fine, si analizza il limite superiore per ciascuno dei vincoli del problema originale.
 
-Nella riformulazione, si useranno le variabili $y_i^j$, dove l'indice $i$ indica il vincolo di riferimento e l'indice $j$ rappresenta la potenza di due corrispondente. Pertanto, la variabile composta, moltiplicata per il suo coefficiente, sarà $2^jy_i^j$.
+Nella riformulazione si useranno le variabili $y_i^j$, dove l'indice $i$ indica il vincolo di riferimento e l'indice $j$ rappresenta la potenza di due corrispondente. Pertanto, la variabile composta, moltiplicata per il suo coefficiente, sarà: $2^jy_i^j$.
 
-\paragraph{Primo vincolo} Riscrivendo il primo vincolo come $s_1 = \pi_t - \pi_s - 1$, per trovare il limite superiore si massimizza la parte destra dell'equazione. Data la natura binaria delle variabili $\pi$ il valore massimo si ottiene azzerando $\pi_s$ e impostando $\pi_t$ a 1, per cui la variabile $s_1$ sarà zero in tutte le istanziazioni che rispettano il primo vincoli, è quindi riscrivibile trivialmente come $y_1^0$. 
+\paragraph{Primo vincolo} Riscrivendo il primo vincolo come $s_1 = \pi_t - \pi_s - 1$, per trovare il limite superiore si massimizza la parte destra dell'equazione. Data la natura binaria delle variabili $\pi$, il valore massimo si ottiene azzerando $\pi_s$ e impostando $\pi_t$ a 1, per cui la variabile $s_1$ sarà zero in tutte le istanziazioni che rispettano il primo vincoli, è quindi riscrivibile trivialmente come $y_1^0$. 
 
 \paragraph{Secondo vincolo} Riformulando il secondo vincolo come $s_2 = \pi_i - \pi_j + \omega_{ij}$, il valore massimo si ottiene istanziando $\pi_i$ a uno, $\pi_j$ a zero e $\omega_{ij}$ a uno. In questo modo si ottiene un upper bound pari a due, che viene riformulato come $y_2^0 + 2y_2^1$.
 
 \paragraph{Terzo vincolo} Isolando la variabile di slack nel terzo vincolo, otteniamo $s_3 = \omega_{ij}$. Anche in questo caso, la variabile $s_3$ può assumere solo valori binari, quindi viene sostituita per uniformità di notazione con $y_3^0$.
 
 \subsection{Rilassamento Lagrangiano}
-Ora che tutti i vincoli sono espressi tramite variabili binarie, è necessario riformulare l'intero problema in modo da poterlo trattare come un'unica equazione.
+In seguito alla conversione dei vincoli finalizzata a scriverli esclusivamente tramite variabili binarie, è necessario procedere alla riformulazione completa del problema al fine di consentirne l'espressione come un'unica equazione.
 
-A tale scopo, è utile applicare una tecnica di rilassamento al problema MinCut. In particolare, mediante l'uso del rilassamento Lagrangiano, è possibile convertire i vincoli in funzioni penalità che vengono sommate alla funzione obiettivo\footnote{Si noti che le funzioni penalità vengono sommate poiché si sta lavorando su un problema di minimizzazione. Nel caso di problemi di massimo, le penalità verrebbero sottratte.}.
+A tale scopo è utile applicare una tecnica di rilassamento al problema \emph{MinCut}. In particolare, mediante l'uso del rilassamento Lagrangiano, è possibile convertire i vincoli in funzioni penalità che vengono sommate alla funzione obiettivo\footnote{Si noti che le funzioni penalità vengono sommate poiché si sta lavorando su un problema di minimizzazione. Nel caso di problemi di massimo, le penalità verrebbero sottratte.}.
 
 È importante notare che l'applicazione del rilassamento al problema originale porta all'introduzione di istanziazioni inconsistenti delle variabili, ovvero casi in cui le penalità introdotte non sono sufficientemente elevate e la soluzione minima ottenuta non soddisfa i vincoli originali del problema.
 
