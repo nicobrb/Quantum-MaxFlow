@@ -14,13 +14,84 @@
 
 \maketitle
 \tableofcontents
+\pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parte 1 MaxFlow MinCut th
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Problema del flusso massimo}
-\section{Riformulazione duale - Min cut}
-\subsection{Variabili del problema}
+
+\subsection{Descrizione generale del problema}
+Introdotto da Harris e Ross nel 1954, il problema del Flusso Massimo (Maximum Flow Problem) richiede di trovare, sulla struttura dati chiamata Rete di Flusso, un
+flusso plausibile con il rapporto più alto possibile (chiamato, appunto \emph{Flusso Massimo}). Il MF è spesso usato per risolvere problemi legati al trasporto di beni o di 
+instradamento di informazioni su una rete.
+
+Si vuole definire innanzitutto la connotazione della Rete di Flusso. Sia:
+\begin{itemize}
+    \item $G = (V, E)$ una rete (rappresentata come un grafo) con $s, t \in V$ rispettivamente la \emph{fonte} e la \emph{foce} di $G$.
+    \item Dato $(i, j) \in E$ uno qualsiasi spigolo della rete, la sua \textbf{capacità} è definita come la massima quantità di flusso che può passare per esso. 
+    Il suo valore è definito dalla funzione $c : E \rightarrow \mathbb{R}^+$.
+\end{itemize}
+
+\textbf{Definizione.} Un generico flusso su una rete $G = (V, E)$ è una funzione $f : E \rightarrow \mathbb{R}$ se sono soddisfatti i seguenti:
+\begin{itemize}
+    \item \emph{Vincoli di capacità.} Per ogni $(i, j) \in E$, il flusso associato ad esso non superà mai la sua capacità, ossia $x_{ij} \leq u_{ij}$.
+    \item \emph{Conservazione dei flussi.} Con sola esclusione del nodo fonte $s$ e foce $t$, la somma dei flussi in entrata in un nodo deve uguagliare la somma dei flussi in uscita
+    dallo stesso nodo. In formula:
+
+    \[ \forall v \in V \backslash \{s,t\}: \sum_{i: (i, j) \in E} x_{ij} = \sum_{i: (j,i) \in E} x_{ji}\] .
+\end{itemize}
+Si può osservare come la matrice di adiacenza del flusso G è antisimmetrica: infatti $x_{ij} = -x_{ji},$ $\forall (i, j) \in E$.\\
+
+\textbf{Definizione.} Il \textbf{valore} del flusso è la quantità di flusso passante sulla rete a partire dalla fonte $s$ e terminante nella foce $t$. Rappresentato in 
+termini formali, un flusso $f : E \rightarrow \mathbb{R}^+$ è una funzione il cui dominio è dato da:
+
+\[ \lvert x \rvert = \sum_{j: (s,j) \in E} x_{sj} - \sum_{i: (i,s) \in E} x_{is}\] .\\
+
+A questo punto è possibile fornire una introduzione formale del problema attraverso la seguente:\\
+
+\textbf{Definizione.}. Il \textbf{Problema del Flusso Massimo} è il problema di instradare quanto più flusso possibile dalla fonte alla foce, ossia di trovare il flusso 
+con massimo valore $x_{max}$ instradabile sulla rete. \\
+
+Il problema del flusso massimo ammette unica o infinite soluzioni, dato che ci sono infinite combinazioni lineari possibili del valore $x_{max}$ di partenza.
+
+
+\subsection{Minimum Cut, Teorema max-flow min-cut}
+Nella teoria dei grafi, un \textbf{taglio di costo minimo} (o \textbf{minimum cut}) per un grafo è un partizione dei vertici del grafo in due insiemi ad disgiunti minimale rispetto
+ad una qualunque metrica definita dal problema. Nella specifica del problema di Flusso a Costo Massimo, su rete G, è interessante porre l'attenzione sull'insieme di tagli chiamati 
+\textbf{tagli s-t} $C = (S,T)$: questo insieme è una suddivisione dei vertici V di G tale che il nodo fonte $s \in S$ e il nodo foce $t \in T$, ossia una ripartizione dei vertici
+della rete in due parti, con la fonte in una parte e la foce in un'altra. 
+Si definisce il \textbf{cut-set} $X_C$ di un taglio C l'insieme degli spigoli che connettono i vertici $i \in S$ ai vertici $j \in T$:
+
+\[X_C := \{(i, j) \in E : i \in S, j \in T \} = (S \times T) \cap E\] \\
+
+È immediato notare che togliere gli spigoli di $X_C$ da E renderebbe impossibile la computazione di qualsiasi flusso a valore positivo, perché non ci sarebbero più cammini dalla 
+fonte alla foce percorribili.
+
+La \textbf{capacità} di un taglio $s-t$ è dato dalla somma delle capacità degli spigoli in $X_C$:
+
+\[c(S,T) = \sum_{(i, j) \in X_{C}} u_{ij} = \sum_{(i,j) \in E, i \in S, j \in T} u_{ij} \]\\
+Il problema del \textbf{taglio s-t a costo minimo} prevede di minimizzare $u(S,T)$, ossia di determinare $S, T$ tali che la capacità del taglio $s-t$ sia minimale.\\
+
+\textbf{Teorema Max-Flow Min-Cut.} Il massimo valore di un flusso $s-t$ è uguale al taglio $s-t$ di costo minimo tra tutti i possibili tagli.
+\pagebreak
+
+\subsection{Riformulazione su programmazione lineare primale-duale}
+È possibile rappresentare il problema del Flusso a Costo massimo come un programma lineare primale il cui duale è il programma lineare associato al problema di Taglio a Costo Minimo.\\
+
+
+\textbf{Formulazione Primale:}
+
+\begin{equation*}
+    \begin{array}{ll@{}ll}
+    \text{massimizza}   & \displaystyle\sum_{(s, i) \in FS_{i}} x_{si} = x_{ts} & \;\;\;\;\;\;\;\;\; &(1)\\
+    \text{soggetto a}   & \displaystyle\sum_{(h, i) \in BS_{i}} x_{hi} - \sum_{(i, h) \in FS_{i}} x_{ij} = 0 \;\;\;\;\;\;\;\;\; &    \forall i \in V \backslash \{s,t\}&(2)\\
+                        & (\displaystyle\sum_{(i, t) \in BS_{t}} x_{it}) - x_{ts} = 0 & &(3)\\
+                        &  x_{ts} - (\displaystyle\sum_{(s,i) \in FS_{s}} x_{si}) = 0 & &(4)\\
+                        &0 \leq x_{ij} \leq u_{ij} & \forall (i,j) \in E &(5)
+    \end{array}
+    \end{equation*}
+
 \subsection{Significato dei vincoli}
 \subsection{Riformulazione tramite uguaglianze}
 
