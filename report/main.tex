@@ -50,8 +50,9 @@ termini formali, un flusso $f : E \rightarrow \mathbb{R}^+$ è una funzione il c
 \[ \lvert x \rvert = \sum_{j: (s,j) \in E} x_{sj} - \sum_{i: (i,s) \in E} x_{is}\] .\\
 
 A questo punto è possibile fornire una introduzione formale del problema attraverso la seguente:\\
+\pagebreak
 
-\textbf{Definizione.}. Il \textbf{Problema del Flusso Massimo} è il problema di instradare quanto più flusso possibile dalla fonte alla foce, ossia di trovare il flusso 
+\textbf{Definizione.} Il \textbf{Problema del Flusso Massimo} è il problema di instradare quanto più flusso possibile dalla fonte alla foce, ossia di trovare il flusso 
 con massimo valore $x_{max}$ instradabile sulla rete. \\
 
 Il problema del flusso massimo ammette unica o infinite soluzioni, dato che ci sono infinite combinazioni lineari possibili del valore $x_{max}$ di partenza.
@@ -74,14 +75,16 @@ La \textbf{capacità} di un taglio $s-t$ è dato dalla somma delle capacità deg
 \[c(S,T) = \sum_{(i, j) \in X_{C}} u_{ij} = \sum_{(i,j) \in E, i \in S, j \in T} u_{ij} \]\\
 Il problema del \textbf{taglio s-t a costo minimo} prevede di minimizzare $u(S,T)$, ossia di determinare $S, T$ tali che la capacità del taglio $s-t$ sia minimale.\\
 
-\textbf{Teorema Max-Flow Min-Cut.} Il massimo valore di un flusso $s-t$ è uguale al taglio $s-t$ di costo minimo tra tutti i possibili tagli.
+\textbf{Teorema Max-Flow Min-Cut (1).} Il massimo valore di un flusso $s-t$ è uguale al taglio $s-t$ di costo minimo tra tutti i possibili tagli.
 \pagebreak
 
 \subsection{Riformulazione su programmazione lineare primale-duale}
-È possibile rappresentare il problema del Flusso a Costo massimo come un programma lineare primale il cui duale è il programma lineare associato al problema di Taglio a Costo Minimo.\\
+
+È possibile rappresentare il problema del Flusso a Costo massimo come un programma lineare primale il cui duale è il programma lineare associato al problema di Taglio a 
+Costo Minimo.\\
 
 
-\textbf{Formulazione Primale:}
+\textbf{Formulazione Primale (a).}
 
 \begin{equation*}
     \begin{array}{ll@{}ll}
@@ -89,12 +92,70 @@ Il problema del \textbf{taglio s-t a costo minimo} prevede di minimizzare $u(S,T
     \text{soggetto a}   & \displaystyle\sum_{(h, i) \in BS_{i}} x_{hi} - \sum_{(i, h) \in FS_{i}} x_{ij} = 0 \;\;\;\;\;\;\;\;\; &    \forall i \in V \backslash \{s,t\}&(2)\\
                         & (\displaystyle\sum_{(i, t) \in BS_{t}} x_{it}) - x_{ts} = 0 & &(3)\\
                         &  x_{ts} - (\displaystyle\sum_{(s,i) \in FS_{s}} x_{si}) = 0 & &(4)\\
-                        &0 \leq x_{ij} \leq u_{ij} & \forall (i,j) \in E &(5)
+                        &0 \leq x_{ij} \leq u_{ij} & \forall (i,j) \in E &(5).
+    \end{array}
+    \end{equation*}
+I vincoli hanno la seguente interpretazione:
+\begin{enumerate}
+    \item Si vuole massimizzare il flusso su un arco dummy, senza capacità, che va dalla foce $t$ alla fonte $s$;
+    \item Vincoli che permettono di rispettare la \emph{conservazione dei flussi};
+    \item Il flusso massimo trovato dal problema deve combaciare con la somma dei flussi entranti nella foce
+    \item Il flusso massimo trovato dal problema deve combaciare con la somma dei flussi uscenti dalla fonte
+    \item Bisogna rispettare il \emph{vincolo di capacità}.
+\end{enumerate}
+
+Il duale di un programma lineare primale è definibile attraverso il seguente procedimento:
+\begin{itemize}
+    \item Ogni variabile del primale diventa un vincolo del duale;
+    \item Ogni vincolo del primale diventa una variabile del duale;
+    \item Va invertita la funzione obiettivo (da massimo a minimo, o viceversa).
+\end{itemize} 
+
+Secondo questo algoritmo, possiamo ottenere a partire da \textbf{(a)}, la seguente:
+\textbf{Formulazione Duale (b).}
+\begin{equation*}
+    \begin{array}{ll@{}ll}
+    \text{minimizza}    & \displaystyle\sum_{(i, j) \in E} \omega_{ij}u_{ij} &  &(1)\\
+    \text{soggetto a}   & \displaystyle \pi_t - \pi_s \geq 1 &   &(2)\\
+                        & \displaystyle \pi_i - \pi_j  + \omega_{ij} \geq 0\;\;\;\;\;\;\;\;\; & \forall (i,j) \in E & (3)\\
+                        & \displaystyle \omega_{ij} \geq 0 & \forall (i,j) \in E & (4).\\
+
     \end{array}
     \end{equation*}
 
-\subsection{Significato dei vincoli}
-\subsection{Riformulazione tramite uguaglianze}
+Ove:
+
+\begin{equation}
+    \omega_{ij} =
+        \begin{cases}
+        1 & \text{se $i \in S$ e $j \in T$, ossia lo spigolo (i,j) appartiene al taglio $X_C$}\\
+        0 & \text{altrimenti}
+        \end{cases}       
+\end{equation}
+
+\begin{equation}
+    \pi_{i} =
+        \begin{cases}
+        1 & \text{se $i \in T$}\\
+        0 & \text{altrimenti}
+        \end{cases}       
+\end{equation}
+
+Anche in questo caso è possibile fornire una interpretazione dei vincoli e della funzione obiettivo:
+\begin{enumerate}
+    \item La funzione obiettivo vuole minimizzare la capacità totale degli spigoli nel taglio;
+    \item Il vincolo si assicura che la fonte sia nell'insieme $S$ e la foce sia nell'insieme $T$;
+    \item Garantisce che, per ogni nodo $i, j$ diverso dalla fonte o dalla foce, se $i \in S$ e $j \in T$, allora lo spigolo $(i,j)$ deve essere considerato nel taglio
+    (e quindi $\omega_{ij}\geq 1$);
+    \item triviale.
+\end{enumerate}
+
+Si può osservare come il problema non garantisce quali spigoli non siano nel taglio, ma può solo garantire che, se esso \emph{può} ricadere nel taglio, allora la sua capacità
+deve essere sommata nella funzione obiettivo: è deducibile che ogni possibile taglio $s-t$ vede il suo costo come una soluzione ammissibile per \textbf{(b)}, e, dalla teoria, ogni
+soluzione di \textbf{(b)} è un limite superiore per \textbf{(a)}, e quindi per il valore del flusso che stiamo cercando di massimizzare.
+
+La 
+ 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parte 2 Problemi QUBO
