@@ -8,7 +8,7 @@
 \usepackage{float}
 
 \author{Nicola Barbaro (1070668)\\Mario Bifulco (881727)}
-\title{Progetto OC - \emph{MaxFlow} QUBO}
+\title{Progetto OC - \emph{Max-Flow} QUBO}
 \date{A.A. 2022/2023}
 
 \begin{document}
@@ -40,49 +40,47 @@ Si vuole definire innanzitutto la connotazione della Rete di Flusso. Sia:
     \item \emph{Conservazione dei flussi.} Con sola esclusione del nodo fonte $s$ e foce $t$, la somma dei flussi in entrata in un nodo deve uguagliare la somma dei flussi in uscita
     dallo stesso nodo. In formula:
 
-    \[ \forall v \in V \backslash \{s,t\}: \sum_{i: (i, j) \in E} x_{ij} = \sum_{i: (j,i) \in E} x_{ji}\] .
+    \[ \forall v \in V \backslash \{s,t\}: \sum_{i: (i, j) \in E} x_{ij} = \sum_{i: (j,i) \in E} x_{ji}\]
 \end{itemize}
-Si può osservare come la matrice di adiacenza del flusso G è antisimmetrica: infatti $x_{ij} = -x_{ji},$ $\forall (i, j) \in E$.\\
+Si può osservare come la matrice di adiacenza del flusso G è antisimmetrica: infatti $x_{ij} = -x_{ji},$ $\forall (i, j) \in E$.
 
-\textbf{Definizione.} Il \textbf{valore} del flusso è la quantità di flusso passante sulla rete a partire dalla fonte $s$ e terminante nella foce $t$. Rappresentato in 
+\paragraph{Definizione.} Il \textbf{valore} del flusso è la quantità di flusso passante sulla rete a partire dalla fonte $s$ e terminante nella foce $t$. Rappresentato in 
 termini formali, un flusso $f : E \rightarrow \mathbb{R}^+$ è una funzione il cui dominio è dato da:
 
-\[ \lvert x \rvert = \sum_{j: (s,j) \in E} x_{sj} - \sum_{i: (i,s) \in E} x_{is}\] .\\
+\[ \lvert x \rvert = \sum_{j: (s,j) \in E} x_{sj} - \sum_{i: (i,s) \in E} x_{is}\]
 
 A questo punto è possibile fornire una introduzione formale del problema attraverso la seguente:\\
 \pagebreak
 
-\textbf{Definizione.} Il \textbf{Problema del Flusso Massimo} è il problema di instradare quanto più flusso possibile dalla fonte alla foce, ossia di trovare il flusso 
-con massimo valore $x_{max}$ instradabile sulla rete. \\
+\paragraph{Definizione.} Il \textbf{Problema del Flusso Massimo} è il problema di instradare quanto più flusso possibile dalla fonte alla foce, ossia di trovare il flusso con massimo valore $x_{max}$ instradabile sulla rete.
 
 Il problema del flusso massimo ammette unica o infinite soluzioni, dato che ci sono infinite combinazioni lineari possibili del valore $x_{max}$ di partenza.
 
 
-\subsection{Minimum Cut, Teorema max-flow min-cut}
-Nella teoria dei grafi, un \textbf{taglio di costo minimo} (o \textbf{minimum cut}) per un grafo è un partizione dei vertici del grafo in due insiemi ad disgiunti minimale rispetto
+\subsection{Minimum Cut, Teorema \emph{Max-Flow Min-Cut}} \label{min-cut}
+Nella teoria dei grafi, un \textbf{taglio di costo minimo} (o \textbf{minimum cut}) per un grafo è un partizione dei vertici del grafo in due insiemi disgiunti minimale rispetto
 ad una qualunque metrica definita dal problema. Nella specifica del problema di Flusso a Costo Massimo, su rete G, è interessante porre l'attenzione sull'insieme di tagli chiamati 
 \textbf{tagli s-t} $C = (S,T)$: questo insieme è una suddivisione dei vertici V di G tale che il nodo fonte $s \in S$ e il nodo foce $t \in T$, ossia una ripartizione dei vertici
 della rete in due parti, con la fonte in una parte e la foce in un'altra. 
 Si definisce il \textbf{cut-set} $X_C$ di un taglio C l'insieme degli spigoli che connettono i vertici $i \in S$ ai vertici $j \in T$:
 
-\[X_C := \{(i, j) \in E : i \in S, j \in T \} = (S \times T) \cap E\] \\
+\[X_C := \{(i, j) \in E : i \in S, j \in T \} = (S \times T) \cap E\]
 
 È immediato notare che togliere gli spigoli di $X_C$ da E renderebbe impossibile la computazione di qualsiasi flusso a valore positivo, perché non ci sarebbero più cammini dalla 
 fonte alla foce percorribili.
 
 La \textbf{capacità} di un taglio $s-t$ è dato dalla somma delle capacità degli spigoli in $X_C$:
 
-\[c(S,T) = \sum_{(i, j) \in X_{C}} u_{ij} = \sum_{(i,j) \in E, i \in S, j \in T} u_{ij} \]\\
-Il problema del \textbf{taglio s-t a costo minimo} prevede di minimizzare $u(S,T)$, ossia di determinare $S, T$ tali che la capacità del taglio $s-t$ sia minimale.\\
+\[c(S,T) = \sum_{(i, j) \in X_{C}} u_{ij} = \sum_{(i,j) \in E, i \in S, j \in T} u_{ij} \]
 
-\textbf{Teorema Max-Flow Min-Cut (1).} Il massimo valore di un flusso $s-t$ è uguale al taglio $s-t$ di costo minimo tra tutti i possibili tagli.
+Il problema del \textbf{taglio s-t a costo minimo} prevede di minimizzare $u(S,T)$, ossia di determinare $S, T$ tali che la capacità del taglio $s-t$ sia minimale.
+
+\paragraph{Teorema \emph{Max-Flow Min-Cut} (1).} Il massimo valore di un flusso $s-t$ è uguale al taglio $s-t$ di costo minimo tra tutti i possibili tagli.\cite{Ford:1956:MFT}
 \pagebreak
 
 \subsection{Riformulazione su programmazione lineare primale-duale}
 
-È possibile rappresentare il problema del Flusso a Costo massimo come un programma lineare primale il cui duale è il programma lineare associato al problema di Taglio a 
-Costo Minimo.\\
-
+È possibile rappresentare il problema del Flusso a Costo massimo come un programma lineare primale il cui duale è il programma lineare associato al problema di Taglio a Costo Minimo.
 
 \textbf{Formulazione Primale (a).}
 
@@ -97,7 +95,7 @@ Costo Minimo.\\
     \end{equation*}
 I vincoli hanno la seguente interpretazione:
 \begin{enumerate}
-    \item Si vuole massimizzare il flusso su un arco dummy, senza capacità, che va dalla foce $t$ alla fonte $s$;
+    \item Si vuole massimizzare il flusso su un arco \emph{dummy}, senza capacità, che va dalla foce $t$ alla fonte $s$;
     \item Vincoli che permettono di rispettare la \emph{conservazione dei flussi};
     \item Il flusso massimo trovato dal problema deve combaciare con la somma dei flussi entranti nella foce
     \item Il flusso massimo trovato dal problema deve combaciare con la somma dei flussi uscenti dalla fonte
@@ -153,9 +151,7 @@ Anche in questo caso è possibile fornire una interpretazione dei vincoli e dell
 Si può osservare come il problema non garantisce quali spigoli non siano nel taglio, ma può solo garantire che, se esso \emph{può} ricadere nel taglio, allora la sua capacità
 deve essere sommata nella funzione obiettivo: è deducibile che ogni possibile taglio $s-t$ vede il suo costo come una soluzione ammissibile per \textbf{(b)}, e, dalla teoria, ogni
 soluzione di \textbf{(b)} è un limite superiore per \textbf{(a)}, e quindi per il valore del flusso che stiamo cercando di massimizzare.
-
-La 
- 
+\pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parte 2 Problemi QUBO
@@ -267,6 +263,7 @@ Ci sono alcuni punti critici da considerare in questo approccio computazionale:
     \item In assenza di tale limite inferiore, la formulazione QUBO può essere considerata come un'euristica e non è possibile valutare in generale l'efficienza e la correttezza dell'algoritmo.
     \item Questo approccio non è valido in modo generale, poiché ci sono casi in cui gli algoritmi classici mostrano un comportamento lineare, mentre l'implementazione quantistica può degradare all'aumentare delle dimensioni del problema.
 \end{itemize}
+\pagebreak
 
 \subsection{Quadratic Unconstraint Binary Optimization}
 Il problema QUBO, Quadratic Unconstrained Binary Optimization, consiste nell'individuare il vettore $x^* = (x_1^*, \dots, x_n^*)$ che minimizza l'equazione $\bar{x}^tQ\bar{x}$, dove $\bar{x}$ è un vettore colonna di variabili binarie e $Q$ è una matrice triangolare superiore che rappresenta i coefficienti della funzione da minimizzare.
@@ -328,32 +325,37 @@ Durante l'esecuzione dell'algoritmo, la temperatura $T$ viene ridotta nel tempo 
 Tale algoritmo rappresenta un importante strumento per l'esplorazione degli spazi di ricerca complessi e ha trovato applicazioni significative nella risoluzione di problemi di ottimizzazione e nell'ambito della computazione quantistica adiabatica.
 
 È importante notare, inoltre, che l'algoritmo può essere implementato anche su processori quantistici adiabatici, sfruttando le peculiarità della computazione quantistica per ottenere potenziali vantaggi prestazionali.
+\pagebreak
 
 \section{Min Cut come problema QUBO}
 
 \subsection{Inquadramento del problema}
-Come visto nella sezione ??? il problema \emph{MinCut} è espresso come:
+Come visto nella sezione \ref{min-cut} il problema \emph{Min-Cut} è espresso come:
 \begin{center}
 \begin{table}[H]
     \centering
     \begin{tabular}{c|c}
         & soggetto a $\pi_t - \pi_s - s_1 = 1$ \\
-        minimizzare & $\pi_i - \pi_j + \omega_{ij} - s_2= 0, \forall (i, j) \in A$\\
-        $\sum_{(u, v) \in A} \omega_{ij}u_{ij}$ & $\omega_{ij} - s_3 = 0, \forall (i, j) \in A$\\
+        minimizzare & $\pi_i - \pi_j + \omega_{ij} - s_2= 0, \forall (i, j) \in E$\\
+        $\sum_{(u, v) \in E} \omega_{ij}u_{ij}$ & $\omega_{ij} - s_3 = 0, \forall (i, j) \in E$\\
         & $s_i \geq 0$
     \end{tabular}
 \end{table}
+\end{center}
 
-\begin{table}
+Nel quale i vincoli sono stati trasformati in uguaglianze tramite l'aggiunta di apposite variabili di slack.
+
+\begin{center}
+\begin{table}[H]
     \centering
     \begin{tabular}{cc}
         $\pi_i = \begin{cases}
-            0 & i \in N_s\\
-            1 & i \in N_t
+            1 & i \in T\\
+            0 & \text{altrimenti} \\
         \end{cases}$ 
         & 
         $\omega_{ij} = \begin{cases}
-            1 & \text{$(i, j) \in A^+$, archi del taglio}\\
+            1 & \text{$(i, j) \in X_C$, archi del taglio}\\
             0 & \text{altrimenti}
         \end{cases}$
     \end{tabular}
@@ -382,7 +384,7 @@ Nella riformulazione si useranno le variabili $y_i^j$, dove l'indice $i$ indica 
 \subsection{Rilassamento Lagrangiano}
 In seguito alla conversione dei vincoli finalizzata a scriverli esclusivamente tramite variabili binarie, è necessario procedere alla riformulazione completa del problema al fine di consentirne l'espressione come un'unica equazione.
 
-A tale scopo è utile applicare una tecnica di rilassamento al problema \emph{MinCut}. In particolare, mediante l'uso del rilassamento Lagrangiano, è possibile convertire i vincoli in funzioni penalità che vengono sommate alla funzione obiettivo\footnote{Si noti che le funzioni penalità vengono sommate poiché si sta lavorando su un problema di minimizzazione. Nel caso di problemi di massimo, le penalità verrebbero sottratte.}.
+A tale scopo è utile applicare una tecnica di rilassamento al problema \emph{Min-Cut}. In particolare, mediante l'uso del rilassamento Lagrangiano, è possibile convertire i vincoli in funzioni penalità che vengono sommate alla funzione obiettivo. Nel problema affrontato le funzioni penalità vengono sommate poiché si sta lavorando su un problema di minimizzazione. Nel caso di problemi di massimo, le penalità verrebbero sottratte.
 
 È importante notare che l'applicazione del rilassamento al problema originale porta all'introduzione di istanziazioni inconsistenti delle variabili, ovvero casi in cui le penalità introdotte non sono sufficientemente elevate e la soluzione minima ottenuta non soddisfa i vincoli originali del problema.
 
@@ -392,12 +394,13 @@ La riformulazione del problema in forma QUBO diventa quindi:
 
 \begin{center}
     \begin{multline*}
-        \min z = \sum_{(u, v) \in A} \omega_{ij}u_{ij} + \lambda*((\pi_t - \pi_s - y_1^0 - 1)^2 +
-        \\+ \sum_{(i, j) \in A}(\pi_i - \pi_j + \omega_{ij} - y_2^0 - 2y_2^1)^2 + \sum_{(i, j) \in A}(\omega_{ij} - y_3^0)^2)
+        \min z = \sum_{(u, v) \in E} \omega_{ij}u_{ij} + \lambda*((\pi_t - \pi_s - y_1^0 - 1)^2 +
+        \\+ \sum_{(i, j) \in E}(\pi_i - \pi_j + \omega_{ij} - y_2^0 - 2y_2^1)^2 + \sum_{(i, j) \in E}(\omega_{ij} - y_3^0)^2)
     \end{multline*}    
 \end{center}
 
 Dove $\lambda$ rappresenta il moltiplicatore Lagrangiano. L'obiettivo è trovare un valore di $\lambda$ adeguato che garantisca che le penalità influiscano in modo significativo sull'assegnamento delle variabili, al fine di ottenere la soluzione ottima anche per il problema non rilassato.
+\pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parte 3 Implementazione
@@ -411,3 +414,5 @@ NOTA: possibile dataset per i test \cite{Jensen2022}
 \bibliographystyle{plain}
 \bibliography{cite}
 \end{document}
+
+% ;TODO davvero è costo massimo?
