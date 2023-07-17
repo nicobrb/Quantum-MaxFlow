@@ -58,8 +58,8 @@ Il problema del flusso massimo ammette unica o infinite soluzioni, dato che ci s
 
 
 \subsection{Minimum Cut, Teorema \emph{Max-Flow Min-Cut}} \label{min-cut}
-Nella teoria dei grafi, un \textbf{taglio di costo minimo} (o \textbf{minimum cut}) per un grafo è un partizione dei vertici del grafo in due insiemi disgiunti minimale rispetto
-ad una qualunque metrica definita dal problema. Nella specifica del problema di Flusso a Costo Massimo, su rete G, è interessante porre l'attenzione sull'insieme di tagli chiamati 
+Nella teoria dei grafi, un \textbf{minimum cut} per un grafo è un partizione dei vertici del grafo in due insiemi disgiunti minimale rispetto
+ad una qualunque metrica definita dal problema. Nella specifica del problema di Flusso Massimo, su rete G, è interessante porre l'attenzione sull'insieme di tagli chiamati 
 \textbf{tagli s-t} $C = (S,T)$: questo insieme è una suddivisione dei vertici V di G tale che il nodo fonte $s \in S$ e il nodo foce $t \in T$, ossia una ripartizione dei vertici
 della rete in due parti, con la fonte in una parte e la foce in un'altra. 
 Si definisce il \textbf{cut-set} $X_C$ di un taglio C l'insieme degli spigoli che connettono i vertici $i \in S$ ai vertici $j \in T$:
@@ -73,14 +73,14 @@ La \textbf{capacità} di un taglio $s-t$ è dato dalla somma delle capacità deg
 
 \[c(S,T) = \sum_{(i, j) \in X_{C}} u_{ij} = \sum_{(i,j) \in E, i \in S, j \in T} u_{ij} \]
 
-Il problema del \textbf{taglio s-t a costo minimo} prevede di minimizzare $u(S,T)$, ossia di determinare $S, T$ tali che la capacità del taglio $s-t$ sia minimale.
+Il problema del \textbf{taglio s-t minimale} prevede di minimizzare $u(S,T)$, ossia di determinare $S, T$ tali che la capacità del taglio $s-t$ sia minimale.
 
-\paragraph{Teorema \emph{Max-Flow Min-Cut} (1).} Il massimo valore di un flusso $s-t$ è uguale al taglio $s-t$ di costo minimo tra tutti i possibili tagli.\cite{Ford:1956:MFT}
+\paragraph{Teorema \emph{Max-Flow Min-Cut} (1).} Il massimo valore di un flusso $s-t$ è uguale al taglio $s-t$ di capacità minima tra tutti i possibili tagli.\cite{Ford:1956:MFT}
 \pagebreak
 
-\subsection{Riformulazione su programmazione lineare primale-duale}
+\subsection{Riformulazione su programmazione lineare primale-duale}  \label{lp-formulation}
 
-È possibile rappresentare il problema del Flusso a Costo massimo come un programma lineare primale il cui duale è il programma lineare associato al problema di Taglio a Costo Minimo.
+È possibile rappresentare il problema del Flusso Massimo come un programma lineare primale il cui duale è il programma lineare associato al problema di Minimum Cut.
 
 \textbf{Formulazione Primale (a).}
 
@@ -149,7 +149,7 @@ Anche in questo caso è possibile fornire una interpretazione dei vincoli e dell
 \end{enumerate}
 
 Si può osservare come il problema non garantisce quali spigoli non siano nel taglio, ma può solo garantire che, se esso \emph{può} ricadere nel taglio, allora la sua capacità
-deve essere sommata nella funzione obiettivo: è deducibile che ogni possibile taglio $s-t$ vede il suo costo come una soluzione ammissibile per \textbf{(b)}, e, dalla teoria, ogni
+deve essere sommata nella funzione obiettivo: è deducibile che ogni possibile taglio $s-t$ vede la sua capacità come una soluzione ammissibile per \textbf{(b)}, e, dalla teoria, ogni
 soluzione di \textbf{(b)} è un limite superiore per \textbf{(a)}, e quindi per il valore del flusso che stiamo cercando di massimizzare.
 
 Dalla teoria della programmazione lineare, è noto il\\
@@ -157,13 +157,10 @@ Dalla teoria della programmazione lineare, è noto il\\
 \textbf{Teorema della dualità forte (2).} Dato uno programma lineare primale P, se esso ammette soluzione ottimale $x^*$, allora anche il programma lineare duale D associato a P 
 ammette soluzione ottima $y^*$, e in particolare si riscontra $y^* = x^*$.
 
-Segue perciò che l'uguaglianza definita in (1) è data espressamente dal teorema (2), e che risolvere il problema del Taglio a Costo Minimo fornisce una soluzione ottima per il 
+Segue perciò che l'uguaglianza definita in (1) è data espressamente dal teorema (2), e che risolvere il problema del Minimum Cut fornisce una soluzione ottima per il 
 problema del Flusso Massimo. 
 \pagebreak
-
-\subsection{Riformulazione del problema duale tramite \hfill \break uguaglianze}
  
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parte 2 Problemi QUBO
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -277,7 +274,7 @@ Ci sono alcuni punti critici da considerare in questo approccio computazionale:
 \pagebreak
 
 \subsection{Quadratic Unconstraint Binary Optimization}
-Il problema QUBO, Quadratic Unconstrained Binary Optimization, consiste nell'individuare il vettore $x^* = (x_1^*, \dots, x_n^*)$ che minimizza l'equazione $\bar{x}^tQ\bar{x}$, dove $\bar{x}$ è un vettore colonna di variabili binarie e $Q$ è una matrice triangolare superiore che rappresenta i coefficienti della funzione da minimizzare.
+Il problema QUBO, Quadratic Unconstrained Binary Optimization, consiste nell'individuare il vettore $x^* = (x_1^*, \dots, x_n^*)$ che minimizza l'equazione $\bar{x}^TQ\bar{x}$, dove $\bar{x}$ è un vettore colonna di variabili binarie e $Q$ è una matrice triangolare superiore che rappresenta i coefficienti della funzione da minimizzare.
 
 In particolare, l'obiettivo del problema QUBO è determinare il valore delle variabili binarie $x_i$ che minimizza l'espressione $\sum_{i=1}^{n} \sum_{j=1}^{n} Q_{ij} x_i x_j$, dove $Q_{ij}$ sono gli elementi della matrice $Q$.
 
@@ -287,9 +284,9 @@ In particolare, l'obiettivo del problema QUBO è determinare il valore delle var
         x_1 & \cdots & x_n 
     \end{bmatrix}}_{\bar{x}^T}$ 
     $\underbrace{\begin{bmatrix}
-        a_1 & \cdots & a_3 \\
-        \vdots & \ddots & b_3 \\
-        0 & \cdots & c_3 
+        a_1 & \cdots & a_n \\
+        \vdots & \ddots & b_n \\
+        0 & \cdots & c_n 
     \end{bmatrix}}_{Q}$ 
     $\underbrace{\begin{bmatrix}
         x_1 \\
@@ -341,12 +338,12 @@ Tale algoritmo rappresenta un importante strumento per l'esplorazione degli spaz
 \section{Min Cut come problema QUBO}
 
 \subsection{Inquadramento del problema}
-Come visto nella sezione \ref{min-cut} il problema \emph{Min-Cut} è espresso come:
+Come visto nella sezione \ref{lp-formulation} il problema \emph{Min-Cut} è espresso come:
 \begin{center}
 \begin{table}[H]
     \centering
     \begin{tabular}{c|c}
-        & soggetto a $\pi_t - \pi_s - s_1 = 1$ \\
+        & soggetto a $\pi_t - \pi_s - s_1 -1 = 0$ \\
         minimizzare & $\pi_i - \pi_j + \omega_{ij} - s_2= 0, \forall (i, j) \in E$\\
         $\sum_{(u, v) \in E} \omega_{ij}u_{ij}$ & $\omega_{ij} - s_3 = 0, \forall (i, j) \in E$\\
         & $s_i \geq 0$
@@ -354,7 +351,7 @@ Come visto nella sezione \ref{min-cut} il problema \emph{Min-Cut} è espresso co
 \end{table}
 \end{center}
 
-Nel quale i vincoli sono stati trasformati in uguaglianze tramite l'aggiunta di apposite variabili di slack.
+Nel quale i vincoli sono stati trasformati in uguaglianze tramite l'aggiunta di apposite variabili di slack, assicurandoci di eguagliare lo zero nella parte destra dell'equazione.
 
 \begin{center}
 \begin{table}[H]
@@ -384,7 +381,7 @@ La strategia adottata consiste nel convertire ogni variabile di slack utilizzand
 
 Per aggiungere un numero appropriato di variabili binarie, è necessario stimare il valore massimo che le variabili di slack possono assumere. A tal fine, si analizza il limite superiore per ciascuno dei vincoli del problema originale.
 
-Nella riformulazione si useranno le variabili $y_i^j$, dove l'indice $i$ indica il vincolo di riferimento e l'indice $j$ rappresenta la potenza di due corrispondente. Pertanto, la variabile composta, moltiplicata per il suo coefficiente, sarà: $2^jy_i^j$.
+Nella riformulazione si useranno le variabili $y_i^j$, dove l'indice $i$ indica il vincolo di riferimento e l'indice $j$ rappresenta la potenza di 2 corrispondente. Pertanto, la variabile composta, moltiplicata per il suo coefficiente, sarà: $2^jy_i^j$.
 
 \paragraph{Primo vincolo} Riscrivendo il primo vincolo come $s_1 = \pi_t - \pi_s - 1$, per trovare il limite superiore si massimizza la parte destra dell'equazione. Data la natura binaria delle variabili $\pi$, il valore massimo si ottiene azzerando $\pi_s$ e impostando $\pi_t$ a 1, per cui la variabile $s_1$ sarà zero in tutte le istanziazioni che rispettano il primo vincoli, è quindi riscrivibile trivialmente come $y_1^0$. 
 
@@ -426,4 +423,3 @@ NOTA: possibile dataset per i test \cite{Jensen2022}
 \bibliography{cite}
 \end{document}
 
-% ;TODO davvero è costo massimo?
