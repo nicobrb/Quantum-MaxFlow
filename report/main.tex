@@ -18,7 +18,7 @@
 \pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Parte 1 MaxFlow MinCut th
+% Parte 1 MaxFlow MinCut Theorem
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Problema del flusso massimo}
 
@@ -154,8 +154,25 @@ Si può osservare come il problema non garantisce quali spigoli non siano nel ta
 deve essere sommata nella funzione obiettivo: è deducibile che ogni possibile taglio $s-t$ vede il suo costo come una soluzione ammissibile per \textbf{(b)}, e, dalla teoria, ogni
 soluzione di \textbf{(b)} è un limite superiore per \textbf{(a)}, e quindi per il valore del flusso che stiamo cercando di massimizzare.
 
-La 
- 
+Dalla teoria della programmazione lineare, è noto il\\
+
+\textbf{Teorema della dualità forte (2).} Dato uno programma lineare primale P, se esso ammette soluzione ottimale $x^*$, allora anche il programma lineare duale D associato a P 
+ammette soluzione ottima $y^*$, e in particolare si riscontra $y^* = x^*$.
+
+Segue perciò che l'uguaglianza definita in (1) è data espressamente dal teorema (2), e che risolvere il problema del Taglio a Costo Minimo fornisce una soluzione ottima per il 
+problema del Flusso Massimo. 
+\pagebreak
+
+\subsection{Riformulazione del problema duale tramite \hfill \break uguaglianze}
+
+
+
+
+
+
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parte 2 Problemi QUBO
