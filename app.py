@@ -1,3 +1,5 @@
+import cProfile
+import pstats
 import random
 import networkx as nx
 from implementation.cpu_max_flow import edmonds_karp, capacity_scaling
@@ -23,7 +25,7 @@ def load_graph(path, prob):
                     g.add_node(n)
             elif line.startswith('a'):
                 vals = [int(x) for x in line.split(' ')[1:]]
-                if (vals[0] == s or vals[1] == t) or (random.uniform(0, 1) > prob):
+                if (vals[0] == s or vals[1] == t) or (random.uniform(0, 1) >= prob and vals[2] > 1):
                     g.add_edge(vals[0], vals[1], capacity=vals[2])
             elif line.startswith('n'):
                 line = line.strip().split(' ')
@@ -41,7 +43,7 @@ def time_max_flow_algorithm(prob):
 
     data = []
     lib_time = 0
-    for graph_path in tqdm(paths[9:10]):
+    for graph_path in paths[9:10]:
         graph, source, sink = load_graph(graph_path, prob)
         # edge_labels = nx.get_edge_attributes(graph, 'capacity')
         # pos = nx.spring_layout(graph)
@@ -52,15 +54,20 @@ def time_max_flow_algorithm(prob):
         start_time = time.time()
         copy_graph = graph.copy()
         lib_mxflow = nx.maximum_flow_value(copy_graph, _s=source, _t=sink)
-        print(lib_mxflow)
+        print("\n", lib_mxflow)
         lib_time = time.time() - start_time
         lib_time += lib_time
 
         start_time = time.time()
-        impl_mxflow = capacity_scaling(graph, source, sink)
+        copy_graph = graph.copy()
+        impl_mxflow, residual_graph = capacity_scaling(copy_graph, source, sink)
         impl_time = time.time() - start_time
 
         data.append([graph_path, lib_time, impl_time, lib_mxflow, impl_mxflow, lib_mxflow == impl_mxflow])
+
+        if lib_mxflow != impl_mxflow:
+            resid = nx.all_simple_paths(residual_graph, source, sink)
+            print(resid)
 
     data = pd.DataFrame(data, columns=['Graph path', 'Time lib', 'Time custom', 'Val lib', 'Val custom', 'Correct'])
     data.to_csv('export/results.csv')
@@ -70,4 +77,9 @@ def time_max_flow_algorithm(prob):
 
 
 if __name__ == "__main__":
-    time_max_flow_algorithm(0.99)
+    # with cProfile.Profile() as profile:
+    for i in range(1):
+        time_max_flow_algorithm(0.75)
+    # results = pstats.Stats(profile)
+    # results.sort_stats(pstats.SortKey.TIME)
+    # # results.print_stats()

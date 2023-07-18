@@ -1,8 +1,9 @@
+import time
 import networkx as nx
 from collections import deque
-
 import numpy as np
 from networkx import NetworkXNoPath
+from networkx.algorithms.flow import shortest_augmenting_path
 
 
 def edmonds_karp(graph, source, sink):
@@ -49,25 +50,46 @@ def find_augmenting_path(graph, source, sink):
     return None, 0
 
 
-####### CAPACITY SCALING #######
+# CAPACITY SCALING
 
 def capacity_scaling(graph, source, sink):
     max_flow = 0
     u_max = max([edge["capacity"] for _, _, edge in graph.edges(data=True)])
     u = 2 ** int(np.log(u_max))
+    start = time.time()
     u_residual = u_based_residual_graph(graph, u)
+    end = time.time()
+    # print(f"1) {end - start}")
+    k = 0
     while u > 0:
+        start = time.time()
         res = provisional_augm_path(u_residual, source, sink)
+        end = time.time()
+        # print(f"2) {end - start}")
         while res:
             max_flow += res["cap"]
-            print(f"{max_flow=}")
+            if max_flow > 100 * k:
+                print(f"{max_flow=}")
+                k += 1
+            start = time.time()
             for i, j in zip(res["path"], res["path"][1:]):
                 graph[i][j]["capacity"] -= res["cap"]
                 u_residual[i][j]["capacity"] -= res["cap"]
+                if graph[i][j]["capacity"] == 0:
+                    graph.remove_edge(i, j)
+                    u_residual.remove_edge(i, j)
+            end = time.time()
+            # print(f"3) {end - start}")
+            start = time.time()
             res = provisional_augm_path(u_residual, source, sink)
+            end = time.time()
+            # print(f"4) {end - start}")
         u //= 2
+        start = time.time()
         u_residual = u_based_residual_graph(graph, u)
-    return max_flow
+        end = time.time()
+        # print(f"5) {end - start}")
+    return max_flow, u_residual
 
 
 def u_based_residual_graph(graph, u):
@@ -79,10 +101,10 @@ def u_based_residual_graph(graph, u):
 
 
 def provisional_augm_path(graph, source, sink):
-    nozero_graph = u_based_residual_graph(graph, 1)
+    # nozero_graph = u_based_residual_graph(graph, 1)
     try:
-        path = nx.shortest_path(nozero_graph, source, sink)
-        min_cap = min(nozero_graph[i][j]["capacity"] for i, j in zip(path, path[1:]))
+        path = nx.shortest_path(graph, source, sink)
+        min_cap = min(graph[i][j]["capacity"] for i, j in zip(path, path[1:]))
         return {"path": path, "cap": min_cap}
     except NetworkXNoPath:
         return False
@@ -101,5 +123,4 @@ def u_based_augmenting_path(graph, source, sink):
                             "cap": min(graph[i][j]["capacity"] for i, j in zip(new_path, new_path[1:]))}
                 deq.append((j, new_path))
                 visited.add(j)
-
     return False
