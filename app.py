@@ -43,7 +43,7 @@ def time_max_flow_algorithm(prob):
 
     data = []
     lib_time = 0
-    for graph_path in paths[9:10]:
+    for graph_path in tqdm(sorted(paths[9:10])):
         graph, source, sink = load_graph(graph_path, prob)
         # edge_labels = nx.get_edge_attributes(graph, 'capacity')
         # pos = nx.spring_layout(graph)
@@ -60,7 +60,7 @@ def time_max_flow_algorithm(prob):
 
         start_time = time.time()
         copy_graph = graph.copy()
-        impl_mxflow, residual_graph = capacity_scaling(copy_graph, source, sink)
+        impl_mxflow, residual_graph = edmonds_karp(copy_graph, source, sink)
         impl_time = time.time() - start_time
 
         data.append([graph_path, lib_time, impl_time, lib_mxflow, impl_mxflow, lib_mxflow == impl_mxflow])
@@ -77,7 +77,7 @@ def time_max_flow_algorithm(prob):
 
 if __name__ == "__main__":
     # with cProfile.Profile() as profile:
-    for i in range(1):
+    for _ in range(1):
         time_max_flow_algorithm(0.75)
     # results = pstats.Stats(profile)
     # results.sort_stats(pstats.SortKey.TIME)

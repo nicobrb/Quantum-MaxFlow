@@ -8,7 +8,6 @@ from networkx.algorithms.flow import shortest_augmenting_path
 
 def edmonds_karp(graph, source, sink):
     max_flow = 0
-    residual_graph = construct_residual_graph(graph)
 
     while True:
         path, capacity = find_augmenting_path(graph, source, sink)
@@ -18,18 +17,13 @@ def edmonds_karp(graph, source, sink):
         print(f"{max_flow=}")
         for u, v in zip(path, path[1:]):
             graph[u][v]['capacity'] -= capacity
-            if (v, u) not in residual_graph.keys():
-                residual_graph[(v, u)] = 0
-            residual_graph[(v, u)] += capacity
+            if graph[u][v]['capacity'] == 0:
+                graph.remove_edge(u, v)
+            if (v, u) not in graph.edges:
+                graph.add_edge(v, u, capacity=0)
+            graph[v][u]['capacity'] += capacity
 
-    return max_flow
-
-
-def construct_residual_graph(graph):
-    residual_graph = {}
-    for u, v, _ in graph.edges(data=True):
-        residual_graph[(v, u)] = 0
-    return residual_graph
+    return max_flow, graph
 
 
 def find_augmenting_path(graph, source, sink):
