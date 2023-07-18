@@ -16,7 +16,7 @@
 \date{A.A. 2022/2023}
 \author{Nicola Barbaro (1070668) - Mario Bifulco (881727)}
 \institute{Università degli studi di Torino - Ottimizzazione Combinatoria}
-\titlegraphic{\hfill\includegraphics[height=2cm]{nuovo_logo}}
+\titlegraphic{\hfill\includegraphics[height=1.5cm]{img/nuovo_logo}}
 \begin{document}
 
 \maketitle
@@ -31,10 +31,11 @@
 \begin{frame}
   \frametitle{Problema di flusso massimo}
 
-  Dato un grafo orientato $G = (V, E)$, anche chiamata \emph{rete di flusso}, 
-  si richiede di trovare il massimo flusso che può scorrere da un nodo sorgente $s$ a un nodo foce $t$. 
+  Dato un grafo orientato $G = (V, E)$, anche chiamato \emph{rete di flusso}, 
+  si richiede di trovare il valore massimo, del bene che si vuole schematizzare, 
+  in grado di fluire nella rete dal nodo sorgente $s$ al nodo foce $t$. 
 
-  % ;TODO valutare altro da aggiungere
+  Utilizzi tipici sono legati al trasporto di beni o l'instradamento su reti.
 
 \end{frame}
 \begin{frame}
@@ -51,6 +52,18 @@
   \end{equation*}
 
 \end{frame}
+\begin{frame}
+  \frametitle{Vincoli del problema}
+
+  \begin{enumerate}
+    \item Si vuole massimizzare il flusso su un arco \emph{dummy}, senza capacità, che va dalla foce $t$ alla fonte $s$;
+    \item Vincoli che permettono di rispettare la \emph{conservazione dei flussi};
+    \item Il flusso massimo trovato dal problema deve combaciare con la somma dei flussi entranti nella foce
+    \item Il flusso massimo trovato dal problema deve combaciare con la somma dei flussi uscenti dalla fonte
+    \item Bisogna rispettare il \emph{vincolo di capacità}.
+\end{enumerate}
+
+\end{frame}
 \subsection{Teorema Max-Flow Min-Cut}
 \begin{frame}
   \frametitle{Problema del minimo taglio}
@@ -59,15 +72,13 @@
 
   \begin{enumerate}
     \item Il nodo sorgente e quello foce non appartengano alla stessa partizione 
-    \item Tutti gli archi che collegano la partizione del nodo sorgente a quella del nodo foce sommano ad una capacità minima tra tutti i possibili tagli legali.
+    \item Considerando $N_s$, la partizione contenente la sorgente, e $N_t$, 
+    la partizione del nodo foce, la somma degli archi con coda in $N_s$ e testa in $N_t$ deve essere minima.
   \end{enumerate}
-
-  % ;TODO riformulare il punto 2
-  % ;TODO valutare altro da aggiungere
 
 \end{frame}
 \begin{frame}
-  \frametitle{Formulazione matematica 1/2}
+  \frametitle{Formulazione matematica}
 
   \begin{equation*}
       \begin{array}{ll@{}ll}
@@ -78,27 +89,24 @@
     \end{array}
   \end{equation*}
 
-\end{frame}
-\begin{frame}
-  \frametitle{Formulazione matematica 2/2}
+  Dove le variabili assumono valore:
 
-  Dove le variabili assumono valori:
-
-  \begin{equation*}
-    \omega_{ij} =
-        \begin{cases}
-        1 & \text{se $i \in S$ e $j \in T$, ossia lo spigolo (i,j) appartiene al taglio $X_C$}\\
-        0 & \text{altrimenti}
-        \end{cases}       
-  \end{equation*}
-
-  \begin{equation*}
-      \pi_{i} =
-          \begin{cases}
-          1 & \text{se $i \in T$}\\
-          0 & \text{altrimenti}
-          \end{cases}       
-  \end{equation*}
+  \begin{center}
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{cc}
+            $\pi_i = \begin{cases}
+                1 & i \in T\\
+                0 & \text{altrimenti} \\
+            \end{cases}$ 
+            & 
+            $\omega_{ij} = \begin{cases}
+                1 & \text{$(i, j) \in X_C$}\\
+                0 & \text{altrimenti}
+            \end{cases}$
+        \end{tabular}
+    \end{table}
+    \end{center}
 
 \end{frame}
 \begin{frame}
@@ -131,7 +139,7 @@
         \node[main](9)[below right of =7]{9};
 
         \draw[->] (1) -- node[above]{9} (2);
-        \draw[->] (2) [color=red] to node[above]{4} (5);
+        \draw[->] (2) [color=blue, ultra thick] to node[above]{4} (5);
         \draw[->] (5) -- node[above]{2} (8);
         \draw[->] (1) -- node[above]{7} (3);
         \draw[->] (3) -- node[left]{2} (2);
@@ -139,19 +147,17 @@
         \draw[->] (4) -- node[above]{3} (6);
         \draw[->] (3) -- node[above]{3} (6);
         \draw[->] (1) -- node[above]{5} (4);
-        \draw[->] (3) [color=red] to node[above]{2} (5);
+        \draw[->] (3) [color=blue, ultra thick] to node[above]{2} (5);
         \draw[->] (5) -- node[right]{8} (7);
         \draw[->] (7) -- node[right]{3} (6);
         \draw[->] (8) -- node[right]{4} (9);
         \draw[->] (7) -- node[above]{4} (8);
         \draw[->] (7) -- node[above]{2} (9);
-        \draw[->] (6) [color=red] to node[above]{1} (9);
+        \draw[->] (6) [color=blue, ultra thick] to node[above]{1} (9);
     \end{tikzpicture}
   \end{center}
 
   Dove il flusso massimo assume valore 7 e il taglio di capacità minima è composto dagli archi $\langle (2, 5), (3, 5), (6, 9) \rangle$.
-
-  % ;TODO valutare se disegnare il taglio
 
 \end{frame}
 
@@ -208,7 +214,7 @@
 
   La ricerca effettuata tramite gli stati d'energia del sistema è approssimabile all'algoritmo di Simulated Annealing.
 
-  \includegraphics[width=\columnwidth]{simulated-annealing}
+  \includegraphics[width=\columnwidth]{img/simulated-annealing}
 
 \end{frame}
 \subsection{Formulazione QUBO}
@@ -225,9 +231,9 @@
         x_1 & \cdots & x_n 
     \end{bmatrix}}_{\bar{x}^T}$ 
     $\underbrace{\begin{bmatrix}
-        a_1 & \cdots & a_3 \\
-        \vdots & \ddots & b_3 \\
-        0 & \cdots & c_3 
+        a_1 & \cdots & a_n \\
+        \vdots & \ddots & b_n \\
+        0 & \cdots & c_n 
     \end{bmatrix}}_{Q}$ 
     $\underbrace{\begin{bmatrix}
         x_1 \\
@@ -271,7 +277,9 @@
 \begin{frame}
   \frametitle{Rilassamento Lagrangiano}
 
-  
+  I vincoli del problema sono trasformati in penalità sommate alla funzione obiettivo.
+
+  In questo modo si ottiene una singola equazione composta da variabili binarie e i rispettivi coefficienti.
 
 \end{frame}
 \begin{frame}
@@ -281,7 +289,7 @@
 
   \begin{center}
     \begin{multline*}
-        \min z = \sum_{(u, v) \in E} \omega_{ij}u_{ij} + \lambda*((\pi_t - \pi_s - y_1^0 - 1)^2 +
+        \min z = \sum_{(i, j) \in E} \omega_{ij}u_{ij} + \lambda*((\pi_t - \pi_s - y_1^0 - 1)^2 +
         \\+ \sum_{(i, j) \in E}(\pi_i - \pi_j + \omega_{ij} - y_2^0 - 2y_2^1)^2 + \sum_{(i, j) \in E}(\omega_{ij} - y_3^0)^2)
     \end{multline*}    
 \end{center}
@@ -292,21 +300,50 @@
 \begin{frame}
   \frametitle{Struttura del codice}
 
-  
+
 
 \end{frame}
 \subsection{Test eseguiti}
 \begin{frame}
   \frametitle{Sperimentazione svolta}
 
+  L'implementazione Min-Cut in forma QUBO è stato eseguito sulla QCPU della D-Wave, confrontando i tempi d'esecuzione con:
   
+  \begin{enumerate}
+    \item Il metodo della libreria per il calcolo del flusso massimo
+    \item Una nostra implementazione dell'algoritmo di Edmonds-Karp
+    \item Una nostra implementazione dell'algoritmo di Capacity Scaling
+  \end{enumerate} 
+
+  Inoltre, è possibile svolgere un'indagine qualitativa per valutare pregi e difetti delle quattro strategie sperimentate.
 
 \end{frame}
 \subsection{Risultati}
 \begin{frame}
   \frametitle{Risultati ottenuti}
 
-  
+  % ;TODO inserire dati reali e valutare tabella riassuntiva
+  \begin{figure}
+    \begin{tikzpicture}
+      \begin{axis}[
+        mbarplot,
+        xlabel={Algoritmi},
+        ylabel={Tempo (MISURA)},
+        width=0.9\textwidth,
+        height=7.5cm,
+        xtick={1, 2, 3, 4}
+      ]
+
+      \addplot plot coordinates {(1, 20)};
+      \addplot plot coordinates {(2, 18)};
+      \addplot plot coordinates {(3, 10)};
+      \addplot plot coordinates {(4, 5)};
+
+      \legend{Libreria, Edmonds Karp, Capacity Scaling, Quantum}
+
+      \end{axis}
+    \end{tikzpicture}
+  \end{figure}
 
 \end{frame}
 

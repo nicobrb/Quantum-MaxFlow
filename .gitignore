@@ -7,3 +7,5 @@ report/*
 presentation/*
 !presentation/*.tex
 !presentation/*.pdf
+!presentation/img
+.DS_Store
