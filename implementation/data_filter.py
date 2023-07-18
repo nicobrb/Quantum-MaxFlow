@@ -5,6 +5,7 @@ from fnmatch import fnmatch
 import shutil
 from tqdm import tqdm
 
+
 def load_graph(path):
     g = nx.DiGraph()
     s = None
@@ -29,6 +30,7 @@ def load_graph(path):
                     t = int(line[1])
     return g, s, t, True
 
+
 def check_graph(p):
     graph, source, target, is_valid = load_graph(p)
     if not is_valid:
@@ -36,6 +38,7 @@ def check_graph(p):
     max_flow_lib = nx.maximum_flow_value(graph, _s=source, _t=target)
     if max_flow_lib != 0:
         shutil.copy(p, f'./filtered/{p.split("/")[-1]}')
+
 
 def main():
     timeout = 5
@@ -51,6 +54,7 @@ def main():
                 _ = future.result(timeout=timeout)
             except concurrent.futures.TimeoutError:
                 future.cancel()
-            
+
+
 if __name__ == "__main__":
     main()
