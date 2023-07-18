@@ -53,7 +53,7 @@ def time_max_flow_algorithm(prob):
 
         start_time = time.time()
         copy_graph = graph.copy()
-        lib_mxflow = nx.maximum_flow_value(copy_graph, _s=source, _t=sink)
+        lib_mxflow, flow_dict = nx.maximum_flow(copy_graph, _s=source, _t=sink)
         print("\n", lib_mxflow)
         lib_time = time.time() - start_time
         lib_time += lib_time
@@ -66,8 +66,7 @@ def time_max_flow_algorithm(prob):
         data.append([graph_path, lib_time, impl_time, lib_mxflow, impl_mxflow, lib_mxflow == impl_mxflow])
 
         if lib_mxflow != impl_mxflow:
-            resid = nx.all_simple_paths(residual_graph, source, sink)
-            print(resid)
+            continue
 
     data = pd.DataFrame(data, columns=['Graph path', 'Time lib', 'Time custom', 'Val lib', 'Val custom', 'Correct'])
     data.to_csv('export/results.csv')

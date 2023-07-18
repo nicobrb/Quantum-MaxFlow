@@ -89,7 +89,7 @@ def capacity_scaling(graph, source, sink):
         u_residual = u_based_residual_graph(graph, u)
         end = time.time()
         # print(f"5) {end - start}")
-    return max_flow, u_residual
+    return max_flow, graph
 
 
 def u_based_residual_graph(graph, u):
