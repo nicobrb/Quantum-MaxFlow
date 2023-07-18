@@ -9,3 +9,4 @@ presentation/*
 !presentation/*.pdf
 .DS_Store
 /data/
+__pycache__
