@@ -3,6 +3,7 @@ import pstats
 import random
 import networkx as nx
 from implementation.cpu_max_flow import edmonds_karp, capacity_scaling
+from implementation.q_max_flow import q_max_flow, get_max_flow_from_cut_edges, q_max_flow_wiki
 import matplotlib.pyplot as plt
 
 import os
@@ -38,13 +39,14 @@ def load_graph(path, prob):
 
 def time_max_flow_algorithm(prob):
     paths = []
-    for path, subdirs, files in os.walk('data/'):
+    for path, subdirs, files in os.walk('computable/'):
         paths.extend(os.path.join(path, name) for name in files if fnmatch(name, '*.max'))
 
     data = []
-    lib_time = 0
-    for graph_path in tqdm(sorted(paths[10:11])):
+    for graph_path in tqdm(sorted(paths)):
+        print(graph_path)
         graph, source, sink = load_graph(graph_path, prob)
+
         # edge_labels = nx.get_edge_attributes(graph, 'capacity')
         # pos = nx.spring_layout(graph)
         # nx.draw(graph, pos, with_labels=True, node_size=500, node_color='lightblue', font_weight='bold')
@@ -54,31 +56,45 @@ def time_max_flow_algorithm(prob):
         start_time = time.time()
         copy_graph = graph.copy()
         lib_mxflow, flow_dict = nx.maximum_flow(copy_graph, _s=source, _t=sink)
-        print("\n", lib_mxflow)
+        cut_lib = nx.minimum_cut(graph, _s=source, _t=sink)
         lib_time = time.time() - start_time
-        lib_time += lib_time
 
         start_time = time.time()
         copy_graph = graph.copy()
-        impl_mxflow, residual_graph = capacity_scaling(copy_graph, source, sink)
-        impl_time = time.time() - start_time
+        karp_mxflow, residual_graph = edmonds_karp(copy_graph, source, sink)
+        cut_custom = nx.minimum_cut(residual_graph, _s=source, _t=sink)
+        karp_time = time.time() - start_time
 
-        data.append([graph_path, lib_time, impl_time, lib_mxflow, impl_mxflow, lib_mxflow == impl_mxflow])
+        start_time = time.time()
+        copy_graph = graph.copy()
+        cap_mxflow, residual_graph = capacity_scaling(copy_graph, source, sink)
+        cut_custom = nx.minimum_cut(residual_graph, _s=source, _t=sink)
+        cap_time = time.time() - start_time
 
-        if lib_mxflow != impl_mxflow:
-            continue
+        start_time = time.time()
+        q_mxflow = q_max_flow(graph, source, sink)
+        q_mxflow = get_max_flow_from_cut_edges(graph, q_mxflow, 'omega')
+        q_time = time.time() - start_time
 
-    data = pd.DataFrame(data, columns=['Graph path', 'Time lib', 'Time custom', 'Val lib', 'Val custom', 'Correct'])
+        start_time = time.time()
+        q_mxflow_wiki = q_max_flow_wiki(graph, source, sink)
+        q_mxflow_wiki = get_max_flow_from_cut_edges(graph, q_mxflow_wiki, 'd')
+        q_time_wiki = time.time() - start_time
+
+        data.append([graph_path, round(lib_time, 5), round(karp_time, 5), round(cap_time, 5), round(q_time, 5), round(q_time_wiki, 5),
+                     lib_mxflow, karp_mxflow, cap_mxflow, q_mxflow, q_mxflow_wiki])
+
+    data = pd.DataFrame(data, columns=['graph-path', 'time-lib', 'time-edmonds-karp', 'time-capacity-scaling', 'time-quantum', 'time-quantum-wiki',
+                                       'val-lib', 'val-edmonda-karp', 'val-capacity-scaling', 'val-quantum', 'val-quantum-wiki'])
+    print(data.to_string())
     data.to_csv('export/results.csv')
-    print(data)
-    print(data.describe())
-    print(f'Total time of library computation {lib_time}')
+    print(data.describe().to_string())
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # with cProfile.Profile() as profile:
-    for _ in range(3):
-        time_max_flow_algorithm(0.75)
+    for _ in range(1):
+        time_max_flow_algorithm(0)
     # results = pstats.Stats(profile)
     # results.sort_stats(pstats.SortKey.TIME)
     # # results.print_stats()
