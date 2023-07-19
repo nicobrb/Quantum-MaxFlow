@@ -37,13 +37,56 @@ def load_graph(path, prob):
     return g, s, t
 
 
+def cut(graph, residual_graph, source):
+    n_s = {source}
+    n_t = set()
+    x_c = 0
+    for i, j, val in residual_graph.edges(data=True):
+        try:
+            if (val['capacity'] - graph[j][i]['capacity']) == 0:
+                if (not list(nx.all_simple_paths(residual_graph, source, i))) and \
+                        (source == j or len(list(nx.all_simple_paths(residual_graph, source, j))) > 0):
+                    n_t.add(i)
+                    x_c += graph[j][i]['capacity']
+                else:
+                    n_s.add(i)
+        except Exception:
+            pass
+    '''for i in n_s:
+        for j in n_t:
+            try:
+                x_c += graph[i][j]['capacity']
+            except Exception:
+                pass'''
+    '''for i in graph.adj:
+        for j, cap in graph[i].items():
+            if i in n_s and j in n_t:
+                x_c += cap['capacity']'''
+    return x_c, n_s, n_t
+
+def convert_to_graph(origin_graph, flow_dict):
+    graph = nx.DiGraph()
+    x_c = 0
+    for i in flow_dict:
+        graph.add_node(i)
+        for j in flow_dict[i]:
+            graph.add_node(j)
+    for i in flow_dict:
+        for j, flow in flow_dict[i].items():
+            residual = origin_graph[i][j]['capacity'] - flow
+            if residual > 0:
+                graph.add_edge(i, j, capacity=residual)
+            else:
+                graph.add_edge(j, i, capacity=flow)
+    return graph
+
 def time_max_flow_algorithm(prob):
     paths = []
     for path, subdirs, files in os.walk('computable/'):
         paths.extend(os.path.join(path, name) for name in files if fnmatch(name, '*.max'))
 
     data = []
-    for graph_path in tqdm(sorted(paths)):
+    for graph_path in tqdm(sorted(paths)[7:8]):
         print(graph_path)
         graph, source, sink = load_graph(graph_path, prob)
 
@@ -56,33 +99,41 @@ def time_max_flow_algorithm(prob):
         start_time = time.time()
         copy_graph = graph.copy()
         lib_mxflow, flow_dict = nx.maximum_flow(copy_graph, _s=source, _t=sink)
-        cut_lib = nx.minimum_cut(graph, _s=source, _t=sink)
+        print(f'{lib_mxflow=}')
+        new_g = convert_to_graph(graph, flow_dict)
+
+        # print(list(nx.all_simple_paths(new_g, source, sink)))
+        # cut_value, cut_partition = nx.minimum_cut(new_g, _s=source, _t=sink)
+        cut_val, *_ = cut(graph, new_g, source)
+        print(f'{cut_val=}')
         lib_time = time.time() - start_time
 
-        start_time = time.time()
-        copy_graph = graph.copy()
-        karp_mxflow, residual_graph = edmonds_karp(copy_graph, source, sink)
-        cut_custom = nx.minimum_cut(residual_graph, _s=source, _t=sink)
-        karp_time = time.time() - start_time
+        #start_time = time.time()
+        #copy_graph = graph.copy()
+        #karp_mxflow, residual_graph = edmonds_karp(copy_graph, source, sink)
+        #cut_custom = nx.minimum_cut(residual_graph, _s=source, _t=sink)
+        #karp_time = time.time() - start_time
 
         start_time = time.time()
         copy_graph = graph.copy()
         cap_mxflow, residual_graph = capacity_scaling(copy_graph, source, sink)
-        cut_custom = nx.minimum_cut(residual_graph, _s=source, _t=sink)
+        # print(cap_mxflow)
+        # cut_custom_val, cut_custom_partition = nx.minimum_cut(residual_graph, _s=source, _t=sink)
+        cut(copy_graph, residual_graph, source)
         cap_time = time.time() - start_time
 
-        start_time = time.time()
-        q_mxflow = q_max_flow(graph, source, sink)
-        q_mxflow = get_max_flow_from_cut_edges(graph, q_mxflow, 'omega')
-        q_time = time.time() - start_time
+        #start_time = time.time()
+        #q_mxflow = q_max_flow(graph, source, sink)
+        #q_mxflow = get_max_flow_from_cut_edges(graph, q_mxflow, 'omega')
+        #q_time = time.time() - start_time
 
-        start_time = time.time()
-        q_mxflow_wiki = q_max_flow_wiki(graph, source, sink)
-        q_mxflow_wiki = get_max_flow_from_cut_edges(graph, q_mxflow_wiki, 'd')
-        q_time_wiki = time.time() - start_time
+        #start_time = time.time()
+        #q_mxflow_wiki = q_max_flow_wiki(graph, source, sink)
+        #q_mxflow_wiki = get_max_flow_from_cut_edges(graph, q_mxflow_wiki, 'd')
+        #q_time_wiki = time.time() - start_time
 
-        data.append([graph_path, round(lib_time, 5), round(karp_time, 5), round(cap_time, 5), round(q_time, 5), round(q_time_wiki, 5),
-                     lib_mxflow, karp_mxflow, cap_mxflow, q_mxflow, q_mxflow_wiki])
+        #data.append([graph_path, round(lib_time, 5), round(karp_time, 5), round(cap_time, 5), round(q_time, 5), round(q_time_wiki, 5),
+                     #lib_mxflow, karp_mxflow, cap_mxflow, q_mxflow, q_mxflow_wiki])
 
     data = pd.DataFrame(data, columns=['graph-path', 'time-lib', 'time-edmonds-karp', 'time-capacity-scaling', 'time-quantum', 'time-quantum-wiki',
                                        'val-lib', 'val-edmonda-karp', 'val-capacity-scaling', 'val-quantum', 'val-quantum-wiki'])
