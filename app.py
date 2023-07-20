@@ -1,19 +1,14 @@
-import cProfile
-import pstats
+from tqdm import tqdm
 import random
 from multiprocessing import Pool
-
 import networkx as nx
 from implementation.cpu_max_flow import edmonds_karp, capacity_scaling
-from implementation.q_max_flow import q_max_flow, get_max_flow_from_cut_edges, q_max_flow_wiki
-import matplotlib.pyplot as plt
-from networkx.algorithms import flow
+
 
 import os
 from fnmatch import fnmatch
 import time
 import pandas as pd
-from tqdm import tqdm
 
 
 def load_graph(path, prob):
@@ -42,15 +37,16 @@ def load_graph(path, prob):
 
 def cut(graph, residual_graph, source):
     n_s = {source}
-    x_c = 0
-    edges = list(nx.bfs_edges(residual_graph, source))
-    for i, j in edges:
+    for i, j in list(nx.bfs_edges(residual_graph, source)):
         n_s.add(i)
         n_s.add(j)
     n_t = set(graph.nodes).difference(n_s)
-    for i, j, cap in graph.edges(data=True):
-        if i in n_s and j in n_t:
-            x_c += cap['capacity']
+    print(f'{len(n_s)=}, {len(n_t)=}')
+    x_c = sum(
+        cap['capacity']
+        for i, j, cap in graph.edges(data=True)
+        if i in n_s and j in n_t
+    )
     return x_c, n_s, n_t
 
 

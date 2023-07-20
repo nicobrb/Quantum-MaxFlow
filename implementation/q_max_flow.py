@@ -10,23 +10,19 @@ def q_max_flow(graph: nx.DiGraph, source: int, target: int):
     c1 = Constraint((pi_vars[target] - pi_vars[source] - 1) ** 2,
                     label='constraint_1', condition=lambda x: x == 0)  # First constraint
     c2 = []
-    y_count = 0
 
-    for i in graph.adj:
-        for j, cap in graph[i].items():
-            obj.append(omega_vars[(i, j)] * cap['capacity'])  # Obj function
-            c2.append(Constraint(
-                (pi_vars[i] - pi_vars[j] + omega_vars[(i, j)] -
-                 (Binary(f'y_2^0-{y_count}') + 2 * Binary(f'y_2^1-{y_count}'))) ** 2,
-                label='constraint_2', condition=lambda x: x == 0
-            ))  # Second constraint
-            y_count += 1
+    for y_count, (i, j, cap) in enumerate(graph.edges(data=True)):
+        obj.append(omega_vars[(i, j)] * cap['capacity'])  # Obj function
+        c2.append(Constraint(
+            (pi_vars[i] - pi_vars[j] + omega_vars[(i, j)] -
+             (Binary(f'y_2^0-{y_count}') + 2 * Binary(f'y_2^1-{y_count}'))) ** 2,
+            label='constraint_2', condition=lambda x: x == 0
+        ))  # Second constraint
 
     lagrange = Placeholder('L')
     obj = sum(obj) + lagrange * c1 + sum(lagrange * c2_i for c2_i in c2)
     bqm = obj.compile().to_bqm(feed_dict={'L': 15})
-    res = SimulatedAnnealingSampler().sample(bqm, num_reads=50)
-    # print(res)
+    res = SimulatedAnnealingSampler().sample(bqm, num_reads=100)
 
     return res.first
 
@@ -84,16 +80,13 @@ def q_max_flow_wiki(graph: nx.DiGraph, source, target):
         )
     bqm = obj.compile().to_bqm(feed_dict={'L': 15})
     res = SimulatedAnnealingSampler().sample(bqm, num_reads=50)
-    # print(res)
     return res.first
 
 
 def get_max_flow_from_cut_edges(graph, sample, var_name):
-    cut_edges = {key: value for key, value in sample[0].items() if key.startswith(var_name)}
-    cut_edges = {key for key, value in cut_edges.items() if value == 1}
+    cut_edges = {key: value for key, value in sample[0].items() if key.startswith(var_name) and value == 1}
     edges = set()
     for e in cut_edges:
         parts = e.split('_')
         edges.add((int(parts[1]), int(parts[2])))
-    # print(edges)
     return sum(graph[i][j]['capacity'] for i, j in edges)
