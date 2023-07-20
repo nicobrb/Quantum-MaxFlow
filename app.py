@@ -1,17 +1,13 @@
-import cProfile
-import pstats
+from tqdm import tqdm
 import random
 import networkx as nx
 from implementation.cpu_max_flow import edmonds_karp, capacity_scaling
 from implementation.q_max_flow import q_max_flow, get_max_flow_from_cut_edges, q_max_flow_wiki
-import matplotlib.pyplot as plt
-from networkx.algorithms import flow
 
 import os
 from fnmatch import fnmatch
 import time
 import pandas as pd
-from tqdm import tqdm
 
 
 def load_graph(path, prob):
@@ -40,38 +36,16 @@ def load_graph(path, prob):
 
 def cut(graph, residual_graph, source):
     n_s = {source}
-    x_c = 0
-    edges = list(nx.bfs_edges(residual_graph, source))
-    # print(f'{edges=}')
-    for i, j in edges:
+    for i, j in list(nx.bfs_edges(residual_graph, source)):
         n_s.add(i)
         n_s.add(j)
     n_t = set(graph.nodes).difference(n_s)
     print(f'{len(n_s)=}, {len(n_t)=}')
-    for i, j, cap in graph.edges(data=True):
-        if i in n_s and j in n_t:
-            x_c += cap['capacity']
-    '''for i, j, val in residual_graph.edges(data=True):
-        try:
-            if (val['capacity'] - graph[j][i]['capacity']) == 0:
-                if (not list(nx.all_simple_paths(residual_graph, source, i))) and \
-                        (source == j or len(list(nx.all_simple_paths(residual_graph, source, j))) > 0):
-                    n_t.add(i)
-                    x_c += graph[j][i]['capacity']
-                else:
-                    n_s.add(i)
-        except Exception:
-            pass'''
-    '''for i in n_s:
-        for j in n_t:
-            try:
-                x_c += graph[i][j]['capacity']
-            except Exception:
-                pass'''
-    '''for i in graph.adj:
-        for j, cap in graph[i].items():
-            if i in n_s and j in n_t:
-                x_c += cap['capacity']'''
+    x_c = sum(
+        cap['capacity']
+        for i, j, cap in graph.edges(data=True)
+        if i in n_s and j in n_t
+    )
     return x_c, n_s, n_t
 
 def convert_to_graph(origin_graph, flow_dict):
@@ -92,12 +66,11 @@ def convert_to_graph(origin_graph, flow_dict):
 
 def time_max_flow_algorithm(prob):
     paths = []
-    for path, subdirs, files in os.walk('computable/'):
+    for path, subdirs, files in os.walk('data/'):
         paths.extend(os.path.join(path, name) for name in files if fnmatch(name, '*.max'))
 
     data = []
-    for graph_path in sorted(paths)[8:]: #
-        print(graph_path)
+    for graph_path in tqdm(sorted(paths)):
         graph, source, sink = load_graph(graph_path, prob)
 
         # edge_labels = nx.get_edge_attributes(graph, 'capacity')
@@ -107,62 +80,28 @@ def time_max_flow_algorithm(prob):
         # plt.show(block=False)
 
         start_time = time.time()
-        copy_graph = graph.copy()
-        # res = flow.preflow_push(copy_graph, source, sink)
-        lib_mxflow, flow_dict = nx.maximum_flow(copy_graph, _s=source, _t=sink)
-        print(f'{lib_mxflow=}')
-        new_g = convert_to_graph(graph, flow_dict)
-
-        # print(list(nx.all_simple_paths(new_g, source, sink)))
-        # cut_value, cut_partition = nx.minimum_cut(new_g, _s=source, _t=sink)
-        cut_val, *_ = cut(graph, new_g, source)
-        print(f'{cut_val=}')
-        del flow_dict, new_g
+        lib_mxflow, flow_dict = nx.maximum_flow(graph, _s=source, _t=sink)
         lib_time = time.time() - start_time
 
         start_time = time.time()
-        # copy_graph = graph.copy()
-        # karp_mxflow, residual_graph = edmonds_karp(copy_graph, source, sink)
-        # cut_custom = nx.minimum_cut(residual_graph, _s=source, _t=sink)
-        karp_time = time.time() - start_time
+        cs_mxflow, residual_graph = capacity_scaling(graph.copy(), source, sink)
+        cs_time = time.time() - start_time
 
         start_time = time.time()
-        copy_graph = graph.copy()
-        cap_mxflow, residual_graph = capacity_scaling(copy_graph, source, sink)
-        print(f'{cap_mxflow=}')
-        del copy_graph
-        # cut_custom_val, cut_custom_partition = nx.minimum_cut(residual_graph, _s=source, _t=sink)
-        # print('CS')
-        # for p in list(nx.all_simple_paths(residual_graph, source, sink)):
-            # print(min(residual_graph[p[val]][p[val + 1]]['capacity'] for val in range(len(p) - 1)))
-        custom_cut, *_ = cut(graph, residual_graph, source)
-        print(f'{custom_cut=}')
-        cap_time = time.time() - start_time
-
-        '''start_time = time.time()
-        q_mxflow = q_max_flow(graph, source, sink)
-        q_mxflow = get_max_flow_from_cut_edges(graph, q_mxflow, 'omega')
+        # q_cut = q_max_flow(graph, source, sink)
+        # q_mxflow = get_max_flow_from_cut_edges(graph, q_cut, 'omega')
+        q_mxflow = -1 # dummy value, just for testing
         q_time = time.time() - start_time
 
-        start_time = time.time()
-        q_mxflow_wiki = q_max_flow_wiki(graph, source, sink)
-        q_mxflow_wiki = get_max_flow_from_cut_edges(graph, q_mxflow_wiki, 'd')
-        q_time_wiki = time.time() - start_time'''
+        data.append([graph_path, round(lib_time, 5), round(cs_time, 5), round(q_time, 5),
+                     lib_mxflow, cs_mxflow, q_mxflow])
 
-        # data.append([graph_path, round(lib_time, 5), round(karp_time, 5), round(cap_time, 5), round(q_time, 5), round(q_time_wiki, 5),
-                     # lib_mxflow, karp_mxflow, cap_mxflow, q_mxflow, q_mxflow_wiki])
-
-    data = pd.DataFrame(data, columns=['graph-path', 'time-lib', 'time-edmonds-karp', 'time-capacity-scaling', 'time-quantum', 'time-quantum-wiki',
-                                       'val-lib', 'val-edmonda-karp', 'val-capacity-scaling', 'val-quantum', 'val-quantum-wiki'])
+    data = pd.DataFrame(data, columns=['graph-path', 'time-lib(s)', 'time-cs(s)', 'time-q(s)',
+                                       'val-lib', 'val-cs', 'val-q'])
     print(data.to_string())
     data.to_csv('export/results.csv')
-    #print(data.describe().to_string())
+    data.describe().to_csv('export/summary.csv')
 
 
 if __name__ == '__main__':
-    # with cProfile.Profile() as profile:
-    for _ in range(5):
-        time_max_flow_algorithm(0.75)
-    # results = pstats.Stats(profile)
-    # results.sort_stats(pstats.SortKey.TIME)
-    # # results.print_stats()
+    time_max_flow_algorithm(0)
