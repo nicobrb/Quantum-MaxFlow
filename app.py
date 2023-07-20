@@ -4,7 +4,6 @@ from multiprocessing import Pool
 import networkx as nx
 from implementation.cpu_max_flow import edmonds_karp, capacity_scaling
 
-
 import os
 from fnmatch import fnmatch
 import time
@@ -92,43 +91,36 @@ def calc_max_flow(graph_path, percentage):
     print(f"{custom_cut=}")
     cap_time = time.time() - start_time
 
-    '''start_time = time.time()
-            q_mxflow = q_max_flow(graph, source, sink)
-            q_mxflow = get_max_flow_from_cut_edges(graph, q_mxflow, 'omega')
-            q_time = time.time() - start_time
+    start_time = time.time()
+    # q_cut = q_max_flow(graph, source, sink)
+    # q_mxflow = get_max_flow_from_cut_edges(graph, q_cut, 'omega')
+    q_mxflow = -1  # dummy value, just for testing
+    q_time = time.time() - start_time
 
-            start_time = time.time()
-            q_mxflow_wiki = q_max_flow_wiki(graph, source, sink)
-            q_mxflow_wiki = get_max_flow_from_cut_edges(graph, q_mxflow_wiki, 'd')
-            q_time_wiki = time.time() - start_time'''
-
-    return graph_path.split('/')[1], lib_mxflow, lib_time, cap_mxflow, cap_time
+    return graph_path.split('/')[1], lib_mxflow, lib_time, cap_mxflow, cap_time, q_mxflow, q_time
 
 
 def time_max_flow_algorithm(prob=0, start=0, stop=0):
     paths = []
     for path, subdirs, files in os.walk('data/'):
         paths.extend(os.path.join(path, name) for name in files if fnmatch(name, '*.max'))
-    stop = len(paths) -1 if stop == 0 else stop
+    stop = len(paths) - 1 if stop == 0 else stop
     inputs = [(path, prob) for path in sorted(paths)[start:stop]]
     data = []
     with Pool(3) as pool:
         pool_results = pool.starmap(calc_max_flow, inputs)
     print(data)
     for res in pool_results:
-        data.append([res[0], round(res[2], 5), round(res[4], 5), res[1], res[3]])  # , q_mxflow, q_mxflow_wiki])
+        data.append([res[0], round(res[2], 5), res[1], round(res[4], 5), res[3], round(res[6], 5), res[5]])
 
     data = pd.DataFrame(data,
                         columns=["GRAPH", "NETWKX_TIME", "CAPACITY_SCALING_TIME",
-                                 "NETWKX_MX_FLOW", "CAPACITY_SCALING_TIME_MXFLOW"])
+                                 "NETWKX_MX_FLOW", "CAPACITY_SCALING_TIME_MXFLOW", "QUANTUM_TIME", "QUANTUM_MXFLOW"])
 
-    # data = pd.DataFrame(data,
-    #                     columns=['graph-path', 'time-lib', 'time-capacity-scaling', 'time-quantum',
-    #                              'time-quantum-wiki',
-    #                              'val-lib', 'val-capacity-scaling', 'val-quantum',
-    #                              'val-quantum-wiki'])
     print(data.to_string())
-    data.to_csv(f"export/results_{time.time()}.csv")
+    now = time.time()
+    data.to_csv(f"export/results_{now}.csv")
+    data.describe().to_csv(f"export/summary_{now}.csv")
 
 
 if __name__ == "__main__":
