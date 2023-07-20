@@ -4,28 +4,28 @@ from neal import SimulatedAnnealingSampler
 
 
 def q_max_flow(graph: nx.DiGraph, source: int, target: int):
-    obj = 0
+    obj = []
     omega_vars = {(i, j): Binary(f'omega_{i}_{j}') for i, j in graph.edges}
     pi_vars = {n: Binary(f'pi_{n}') for n in graph.nodes}
     c1 = Constraint((pi_vars[target] - pi_vars[source] - 1) ** 2,
                     label='constraint_1', condition=lambda x: x == 0)  # First constraint
-    c2 = 0
+    c2 = []
     y_count = 0
 
     for i in graph.adj:
         for j, cap in graph[i].items():
-            obj += omega_vars[(i, j)] * cap['capacity']  # Obj function
-            c2 += Constraint(
+            obj.append(omega_vars[(i, j)] * cap['capacity'])  # Obj function
+            c2.append(Constraint(
                 (pi_vars[i] - pi_vars[j] + omega_vars[(i, j)] -
                  (Binary(f'y_2^0-{y_count}') + 2 * Binary(f'y_2^1-{y_count}'))) ** 2,
                 label='constraint_2', condition=lambda x: x == 0
-            )  # Second constraint
+            ))  # Second constraint
             y_count += 1
 
     lagrange = Placeholder('L')
-    obj +=  lagrange * c1 + lagrange * c2
-    bqm = obj.compile().to_bqm(feed_dict={'L': 100})
-    res = SimulatedAnnealingSampler().sample(bqm, num_reads=10)
+    obj = sum(obj) + lagrange * c1 + sum(lagrange * c2_i for c2_i in c2)
+    bqm = obj.compile().to_bqm(feed_dict={'L': 15})
+    res = SimulatedAnnealingSampler().sample(bqm, num_reads=50)
     # print(res)
 
     return res.first
@@ -38,49 +38,52 @@ def q_max_flow_wiki(graph: nx.DiGraph, source, target):
     nodes.remove(target)
     z_vars = {n: Binary(f'z_{n}') for n in nodes}
     y_count = 0
-    obj = 0
-    c1 = 0
-    c2 = 0
-    c3 = 0
+    obj = []
+    c1 = []
+    c2 = []
+    c3 = []
     edges = graph.edges
 
     for u in graph.adj:
         for v, cap in graph[u].items():
-            obj += d_vars[(u, v)] * cap['capacity']  # Obj function
+            obj.append(d_vars[(u, v)] * cap['capacity'])  # Obj function
 
             if u != source and v != target:
-                c1 += Constraint(
+                c1.append(Constraint(
                     (d_vars[(u, v)] - z_vars[u] + z_vars[v] -
                      Binary(f'y_1^0-{y_count}') - 2 * Binary(f'y_1^1-{y_count}')) ** 2,
                     label='constraint_1', condition=lambda x: x == 0
-                )
+                ))
                 y_count += 1
 
     for v in graph[source]:
         if v != target:
-            c2 += Constraint(
+            c2.append(Constraint(
                 (d_vars[(source, v)] + z_vars[v] - Binary(f'y_2^0-{y_count}') - 1) ** 2,
                 label='constraint_2', condition=lambda x: x == 0
-            )
+            ))
             y_count += 1
 
     for u in graph.adj:
         if u != source and (u, target) in edges:
-            c3 += Constraint(
+            c3.append(Constraint(
                 (d_vars[(u, target)] - z_vars[u] - Binary(f'y_3^0-{y_count}')) ** 2,
                 label='constraint_3', condition=lambda x: x == 0
-            )
+            ))
             y_count += 1
 
     lagrange = Placeholder('L')
-    obj += lagrange * c1 + lagrange * c2 + lagrange * c3
+    obj = sum(obj) + \
+          sum(lagrange * c1_i for c1_i in c1) + \
+          sum(lagrange * c2_i for c2_i in c2) + \
+          sum(lagrange * c3_i for c3_i in c3)
     if (source, target) in graph.edges:
         obj += lagrange * Constraint(
             (d_vars[(source, target)] - 1) ** 2,
             label='constraint_4', condition=lambda x: x == 0
         )
-    bqm = obj.compile().to_bqm(feed_dict={'L': 100})
-    res = SimulatedAnnealingSampler().sample(bqm, num_reads=10)
+    bqm = obj.compile().to_bqm(feed_dict={'L': 15})
+    res = SimulatedAnnealingSampler().sample(bqm, num_reads=50)
     # print(res)
     return res.first
 
