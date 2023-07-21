@@ -6,6 +6,9 @@
 \usepackage{hyperref}
 \usepackage{tikz}
 \usepackage{float}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{listings}
 
 \author{Nicola Barbaro (1070668)\\Mario Bifulco (881727)}
 \title{Progetto OC - \emph{Max-Flow} QUBO}
@@ -58,8 +61,8 @@ Il problema del flusso massimo ammette unica o infinite soluzioni, dato che ci s
 
 
 \subsection{Minimum Cut, Teorema \emph{Max-Flow Min-Cut}} \label{min-cut}
-Nella teoria dei grafi, un \textbf{taglio di costo minimo} (o \textbf{minimum cut}) per un grafo è un partizione dei vertici del grafo in due insiemi disgiunti minimale rispetto
-ad una qualunque metrica definita dal problema. Nella specifica del problema di Flusso a Costo Massimo, su rete G, è interessante porre l'attenzione sull'insieme di tagli chiamati 
+Nella teoria dei grafi, un \textbf{minimum cut} per un grafo è un partizione dei vertici del grafo in due insiemi disgiunti minimale rispetto
+ad una qualunque metrica definita dal problema. Nella specifica del problema di Flusso Massimo, su rete G, è interessante porre l'attenzione sull'insieme di tagli chiamati 
 \textbf{tagli s-t} $C = (S,T)$: questo insieme è una suddivisione dei vertici V di G tale che il nodo fonte $s \in S$ e il nodo foce $t \in T$, ossia una ripartizione dei vertici
 della rete in due parti, con la fonte in una parte e la foce in un'altra. 
 Si definisce il \textbf{cut-set} $X_C$ di un taglio C l'insieme degli spigoli che connettono i vertici $i \in S$ ai vertici $j \in T$:
@@ -73,14 +76,14 @@ La \textbf{capacità} di un taglio $s-t$ è dato dalla somma delle capacità deg
 
 \[c(S,T) = \sum_{(i, j) \in X_{C}} u_{ij} = \sum_{(i,j) \in E, i \in S, j \in T} u_{ij} \]
 
-Il problema del \textbf{taglio s-t a costo minimo} prevede di minimizzare $u(S,T)$, ossia di determinare $S, T$ tali che la capacità del taglio $s-t$ sia minimale.
+Il problema del \textbf{taglio s-t minimale} prevede di minimizzare $u(S,T)$, ossia di determinare $S, T$ tali che la capacità del taglio $s-t$ sia minimale.
 
-\paragraph{Teorema \emph{Max-Flow Min-Cut} (1).} Il massimo valore di un flusso $s-t$ è uguale al taglio $s-t$ di costo minimo tra tutti i possibili tagli.\cite{Ford:1956:MFT}
+\paragraph{Teorema \emph{Max-Flow Min-Cut} (1).} Il massimo valore di un flusso $s-t$ è uguale al taglio $s-t$ di capacità minima tra tutti i possibili tagli.\cite{Ford:1956:MFT}
 \pagebreak
 
-\subsection{Riformulazione su programmazione lineare primale-duale}
+\subsection{Riformulazione su programmazione lineare primale-duale}  \label{lp-formulation}
 
-È possibile rappresentare il problema del Flusso a Costo massimo come un programma lineare primale il cui duale è il programma lineare associato al problema di Taglio a Costo Minimo.
+È possibile rappresentare il problema del Flusso Massimo come un programma lineare primale il cui duale è il programma lineare associato al problema di Minimum Cut.
 
 \textbf{Formulazione Primale (a).}
 
@@ -113,7 +116,7 @@ Secondo questo algoritmo, possiamo ottenere a partire da \textbf{(a)}, la seguen
 \textbf{Formulazione Duale (b).}
 \begin{equation*}
     \begin{array}{ll@{}ll}
-    \text{minimizza}    & \displaystyle\sum_{(i, j) \in E} \omega_{ij}u_{ij} &  &(1)\\
+    \text{minimizzare}    & \displaystyle\sum_{(i, j) \in E} \omega_{ij}u_{ij} &  &(1)\\
     \text{soggetto a}   & \displaystyle \pi_t - \pi_s \geq 1 &   &(2)\\
                         & \displaystyle \pi_i - \pi_j  + \omega_{ij} \geq 0\;\;\;\;\;\;\;\;\; & \forall (i,j) \in E & (3)\\
                         & \displaystyle \omega_{ij} \geq 0 & \forall (i,j) \in E & (4).\\
@@ -149,26 +152,22 @@ Anche in questo caso è possibile fornire una interpretazione dei vincoli e dell
 \end{enumerate}
 
 Si può osservare come il problema non garantisce quali spigoli non siano nel taglio, ma può solo garantire che, se esso \emph{può} ricadere nel taglio, allora la sua capacità
-deve essere sommata nella funzione obiettivo: è deducibile che ogni possibile taglio $s-t$ vede il suo costo come una soluzione ammissibile per \textbf{(b)}, e, dalla teoria, ogni
+deve essere sommata nella funzione obiettivo: è deducibile che ogni possibile taglio $s-t$ vede la sua capacità come una soluzione ammissibile per \textbf{(b)}, e, dalla teoria, ogni
 soluzione di \textbf{(b)} è un limite superiore per \textbf{(a)}, e quindi per il valore del flusso che stiamo cercando di massimizzare.
 
-Dalla teoria della programmazione lineare, è noto il\\
+Dalla teoria della programmazione lineare, è noto il
 
-\textbf{Teorema della dualità forte (2).} Dato uno programma lineare primale P, se esso ammette soluzione ottimale $x^*$, allora anche il programma lineare duale D associato a P 
+\paragraph{Teorema della dualità forte (2).} Dato uno programma lineare primale P, se esso ammette soluzione ottimale $x^*$, allora anche il programma lineare duale D associato a P 
 ammette soluzione ottima $y^*$, e in particolare si riscontra $y^* = x^*$.
 
-Segue perciò che l'uguaglianza definita in (1) è data espressamente dal teorema (2), e che risolvere il problema del Taglio a Costo Minimo fornisce una soluzione ottima per il 
+Segue perciò che l'uguaglianza definita in (1) è data espressamente dal teorema (2), e che risolvere il problema del Minimum Cut fornisce una soluzione ottima per il 
 problema del Flusso Massimo. 
 \pagebreak
-
-\subsection{Riformulazione del problema duale tramite \hfill \break uguaglianze}
- 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parte 2 Problemi QUBO
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{QAC e formulazione QUBO}
-La seguente sezione fa riferimento alle informazioni contenute in \cite{MCGEOCH2020169} e \cite{DBLP:journals/corr/abs-1811-11538}.
 
 \subsection{Quantum Adiabatic Computing}
 La risoluzione di problemi intrattabili in modo efficiente utilizzando il calcolo classico richiede la dimostrazione dell'uguaglianza $P = NP$. Tuttavia, al momento attuale, questa dimostrazione rimane un problema aperto.
@@ -261,7 +260,7 @@ Per risolvere problemi espressi tramite la programmazione lineare utilizzando un
         \draw[ultra thick] (13) -- (33);
         \draw[ultra thick] (14) -- (34);
     \end{tikzpicture} 
-    \caption{Esempio di QCPU a 32 qubit}
+    \caption{Esempio di QCPU a 32 qubit\cite{MCGEOCH2020169}}
 \end{center}
 \end{figure}
 
@@ -277,7 +276,7 @@ Ci sono alcuni punti critici da considerare in questo approccio computazionale:
 \pagebreak
 
 \subsection{Quadratic Unconstraint Binary Optimization}
-Il problema QUBO, Quadratic Unconstrained Binary Optimization, consiste nell'individuare il vettore $x^* = (x_1^*, \dots, x_n^*)$ che minimizza l'equazione $\bar{x}^tQ\bar{x}$, dove $\bar{x}$ è un vettore colonna di variabili binarie e $Q$ è una matrice triangolare superiore che rappresenta i coefficienti della funzione da minimizzare.
+Il problema QUBO, Quadratic Unconstrained Binary Optimization\cite{DBLP:journals/corr/abs-1811-11538}, consiste nell'individuare il vettore $x^* = (x_1^*, \dots, x_n^*)$ che minimizza l'equazione $\bar{x}^TQ\bar{x}$, dove $\bar{x}$ è un vettore colonna di variabili binarie e $Q$ è una matrice triangolare superiore che rappresenta i coefficienti della funzione da minimizzare.
 
 In particolare, l'obiettivo del problema QUBO è determinare il valore delle variabili binarie $x_i$ che minimizza l'espressione $\sum_{i=1}^{n} \sum_{j=1}^{n} Q_{ij} x_i x_j$, dove $Q_{ij}$ sono gli elementi della matrice $Q$.
 
@@ -287,9 +286,9 @@ In particolare, l'obiettivo del problema QUBO è determinare il valore delle var
         x_1 & \cdots & x_n 
     \end{bmatrix}}_{\bar{x}^T}$ 
     $\underbrace{\begin{bmatrix}
-        a_1 & \cdots & a_3 \\
-        \vdots & \ddots & b_3 \\
-        0 & \cdots & c_3 
+        a_1 & \cdots & a_n \\
+        \vdots & \ddots & b_n \\
+        0 & \cdots & c_n 
     \end{bmatrix}}_{Q}$ 
     $\underbrace{\begin{bmatrix}
         x_1 \\
@@ -338,7 +337,7 @@ Tale algoritmo rappresenta un importante strumento per l'esplorazione degli spaz
 È importante notare, inoltre, che l'algoritmo può essere implementato anche su processori quantistici adiabatici, sfruttando le peculiarità della computazione quantistica per ottenere potenziali vantaggi prestazionali.
 \pagebreak
 
-\section{Min Cut come problema QUBO}
+\section{Min Cut come problema QUBO} 
 
 \subsection{Inquadramento del problema}
 Come visto nella sezione \ref{min-cut} il problema \emph{Min-Cut} è espresso come:
@@ -346,32 +345,15 @@ Come visto nella sezione \ref{min-cut} il problema \emph{Min-Cut} è espresso co
 \begin{table}[H]
     \centering
     \begin{tabular}{c|c}
-        & soggetto a $\pi_t - \pi_s - s_1 = 1$ \\
-        minimizzare & $\pi_i - \pi_j + \omega_{ij} - s_2= 0, \forall (i, j) \in E$\\
-        $\sum_{(u, v) \in E} \omega_{ij}u_{ij}$ & $\omega_{ij} - s_3 = 0, \forall (i, j) \in E$\\
-        & $s_i \geq 0$
+        & soggetto a \\
+        minimizzare & $\pi_t - \pi_s - 1 = 0$ \\
+        $\sum_{(i, j) \in E} \omega_{ij}u_{ij}$ & $\pi_i - \pi_j + \omega_{ij} - s_2= 0, \forall (i, j) \in E$\\
+        & $s_2 \geq 0, w_{ij} \in \{0, 1\}, \pi_i \in \{0, 1\}$
     \end{tabular}
 \end{table}
 \end{center}
 
-Nel quale i vincoli sono stati trasformati in uguaglianze tramite l'aggiunta di apposite variabili di slack.
-
-\begin{center}
-\begin{table}[H]
-    \centering
-    \begin{tabular}{cc}
-        $\pi_i = \begin{cases}
-            1 & i \in T\\
-            0 & \text{altrimenti} \\
-        \end{cases}$ 
-        & 
-        $\omega_{ij} = \begin{cases}
-            1 & \text{$(i, j) \in X_C$, archi del taglio}\\
-            0 & \text{altrimenti}
-        \end{cases}$
-    \end{tabular}
-\end{table}
-\end{center}
+Nel quale il primo vincolo è stato trasformato in uguaglianza, in quanto un assegnamento valido non sarà mai diverso da zero, e al secondo vincolo è stata aggiunta un'apposita variabile di slack.
 
 Dove la funzione obiettivo è la somma delle capacità degli archi del taglio, mentre i vincoli garantiscono che il taglio sia valido.
 
@@ -386,11 +368,7 @@ Per aggiungere un numero appropriato di variabili binarie, è necessario stimare
 
 Nella riformulazione si useranno le variabili $y_i^j$, dove l'indice $i$ indica il vincolo di riferimento e l'indice $j$ rappresenta la potenza di due corrispondente. Pertanto, la variabile composta, moltiplicata per il suo coefficiente, sarà: $2^jy_i^j$.
 
-\paragraph{Primo vincolo} Riscrivendo il primo vincolo come $s_1 = \pi_t - \pi_s - 1$, per trovare il limite superiore si massimizza la parte destra dell'equazione. Data la natura binaria delle variabili $\pi$, il valore massimo si ottiene azzerando $\pi_s$ e impostando $\pi_t$ a 1, per cui la variabile $s_1$ sarà zero in tutte le istanziazioni che rispettano il primo vincoli, è quindi riscrivibile trivialmente come $y_1^0$. 
-
 \paragraph{Secondo vincolo} Riformulando il secondo vincolo come $s_2 = \pi_i - \pi_j + \omega_{ij}$, il valore massimo si ottiene istanziando $\pi_i$ a uno, $\pi_j$ a zero e $\omega_{ij}$ a uno. In questo modo si ottiene un upper bound pari a due, che viene riformulato come $y_2^0 + 2y_2^1$.
-
-\paragraph{Terzo vincolo} Isolando la variabile di slack nel terzo vincolo, otteniamo $s_3 = \omega_{ij}$. Anche in questo caso, la variabile $s_3$ può assumere solo valori binari, quindi viene sostituita per uniformità di notazione con $y_3^0$.
 
 \subsection{Rilassamento Lagrangiano}
 In seguito alla conversione dei vincoli finalizzata a scriverli esclusivamente tramite variabili binarie, è necessario procedere alla riformulazione completa del problema al fine di consentirne l'espressione come un'unica equazione.
@@ -404,10 +382,7 @@ Al fine di evitare tali situazioni, le funzioni penalità vengono moltiplicate p
 La riformulazione del problema in forma QUBO diventa quindi:
 
 \begin{center}
-    \begin{multline*}
-        \min z = \sum_{(u, v) \in E} \omega_{ij}u_{ij} + \lambda*((\pi_t - \pi_s - y_1^0 - 1)^2 +
-        \\+ \sum_{(i, j) \in E}(\pi_i - \pi_j + \omega_{ij} - y_2^0 - 2y_2^1)^2 + \sum_{(i, j) \in E}(\omega_{ij} - y_3^0)^2)
-    \end{multline*}    
+    \[\mathcal{H}_P = \sum_{(u, v) \in E} \omega_{ij}u_{ij} + \lambda(\pi_t - \pi_s - 1)^2 + \lambda\sum_{(i, j) \in E}(\pi_i - \pi_j + \omega_{ij} - y_2^0 - 2y_2^1)^2\]   
 \end{center}
 
 Dove $\lambda$ rappresenta il moltiplicatore Lagrangiano. L'obiettivo è trovare un valore di $\lambda$ adeguato che garantisca che le penalità influiscano in modo significativo sull'assegnamento delle variabili, al fine di ottenere la soluzione ottima anche per il problema non rilassato.
@@ -418,12 +393,157 @@ Dove $\lambda$ rappresenta il moltiplicatore Lagrangiano. L'obiettivo è trovare
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Implementazione}
 
+Per valutare l'efficacia della riformulazione proposta e dei metodi di calcolo quantistico allo stato dell'arte, l'algoritmo per problema del taglio minimo è stato implementato utilizzando il linguaggio di programmazione Python e le librerie fornite da D-Wave Systems per interagire con la QPU\cite{dwave}.
+
+Per confrontare i risultati ottenuti tramite l'algoritmo in formulazione QUBO con quelli derivabili da approcci classici è stata utilizzata la libreria NetworkX\cite{networkx}, che ci ha permesso di gestire grafi e flussi su reti in modo semplice ed efficiente.
+
+Per garantire un confronto equo tra gli algoritmi, abbiamo anche implementato una versione dell'algoritmo di capacity scaling, noto per la sua efficienza nell'affrontare problemi di flusso massimo su reti, tale algoritmo ha una complessità asintotica pari a $O(n^2 m \log C)$.
+
+A seguire, lo pseudocodice dell'algoritmo di capacity scaling:
+
+\begin{algorithm}
+\caption{Capacity Scaling}
+    \begin{algorithmic}[1]
+    \Procedure{CapacityScaling}{G}
+        \State Inizializza il flusso $f_e$ su ogni arco $e \in E$ a 0
+        \State $C \gets \max_{e \in E} c_e$
+        \While{$C > 0$}
+            \State Trova un cammino aumentante $p$ in $G_f$
+            \While{$p$ esiste}
+                \State $f_e \gets f_e + \delta$ per ogni arco $e \in p$
+                \State $C \gets C - \delta$
+                \State Trova un nuovo cammino aumentante $p$ in $G_f$
+            \EndWhile
+            \State Ricalcola i flussi residui e i pesi degli archi in $G_f$
+            \State $C \gets C/2$
+        \EndWhile
+        \State \textbf{return} $f$
+    \EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+Il codice sviluppato è stato organizzato in un'applicazione da linea di comando, che consente di eseguire i vari algoritmi sull'intero dataset e di riportare i risultati. Inoltre, il pacchetto denominato ``implementation'' contiene il codice relativo all'algoritmo di capacity scaling e della riformulazione QUBO del problema di taglio minimo.
+
+Questo setup ha permesso di eseguire confronti attendibili tra l'algoritmo quantistico adiabatico e l'algoritmo di capacity scaling, e di valutare l'efficacia della riformulazione proposta per il problema del taglio minimo, oltre che permettere una valutazione qualitativa dell'efficacia degli strumenti di calcolo non classici attualmente disponibili.
+\pagebreak
+
 \subsection{Test}
-NOTA: possibile dataset per i test \cite{Jensen2022}
+I test condotti hanno coperto un insieme di grafi, suddivisibili in due macroclassi, i grafi più semplici e quelli di dimensione maggiore. In particolare, abbiamo impiegato i grafi presentati durante le prove d'esame del corso di Ottimizzazione Combinatoria, oltre a un sottoinsieme dei grafi disponibili nel dataset pubblico per i problemi di flusso\cite{Jensen2022}.
 
+I dati relativi ai grafi sono stati rappresentati e salvati nel formato \textsc{DIMACS}. Questo formato è uno standard ampiamente utilizzato per la rappresentazione di grafi, problemi di flusso e problemi di taglio minimo. La struttura di un file \textsc{DIMACS} è organizzata come segue:
 
+\begin{itemize}
+    \item La prima riga del file contiene una descrizione del grafo o del problema.
+    \item Seguono le righe per identificare specifici nodi, ad esempio il nodo sorgente e quello pozzo.
+    \item Le righe successive contengono le informazioni sugli archi del grafo, ovvero le coppie di nodi componenti lo spigolo e la relativa capacità.
+\end{itemize}
+
+Aprendo un file in formato \textsc{DIMACS} il formato visualizzabile è analogo a quanto riportato nel listato sottostante.
+
+\begin{lstlisting}
+p max #nodes #edges
+n node_id label
+a source_node_id target_node_id edge_capacity    
+\end{lstlisting}
+
+\subsection{Risultati sperimentali}
+Nella tabella \ref{tabella_tempi} sono riportati i tempi d'esecuzione per le tre sperimentazioni svolte, mentre nella tabella \ref{tabella_valori} si trovano i risultati, ovvero il massimo flusso, ottenuti tramite la computazione classica o tramite il calcolo quantistico.
+
+Nella seconda tabella il valore ottenuto tramite la libreria e quello derivante dall'implementazione dell'algoritmo \emph{Capacity Scaling} sono riportate nella stessa colonna in quanto essendo entrambi algoritmi deterministici avere risultati diversi implicherebbe un errore nell'esecuzione.
+
+Tale discorso non si applica invece per la computazione quantistica, che restituisce l'istanziazione delle variabili a minore energia, ma sfruttando un approccio probabilistico non c'è garanzia che il risultato sia esattamente quello desiderato.
+
+\begin{table}
+    \caption{Tempi d'esecuzione}\label{tabella_tempi}
+    \centering
+    \begin{tabular}{|l|l|l|l|}
+    \hline
+        Grafo & Libreria (s) & CapacityScaling (s) & QAC (s) \\ \hline
+        2015-06-10.max & 0.00100 & 0.00100 & -1 \\ \hline
+        2015-09-18.max & 0.00100 & 0.00100 & -1 \\ \hline
+        2015-07-09.max & 0.00100 & 0.00100 & -1 \\ \hline
+        2019-06-21.max & 0.00100 & 0.00100 & -1 \\ \hline
+        2020-09-15.max & 0.00100 & 0.00100 & -1 \\ \hline
+        2021-07-06.max & 0.00100 & 0.00100 & -1 \\ \hline
+        2021-06-14.max & 0.00001 & 0.00100 & -1 \\ \hline
+        2021-09-13.max & 0.00001 & 0.00200 & -1 \\ \hline
+        BVZ-tsukuba8.max & 88.28760 & 416.60800 & -1 \\ \hline
+        BVZ-venus1.max & 266.89360 & 1232.29300 & -1 \\ \hline
+        BVZ-sawtooth15.max & 160.31860 & 1554.15700 & -1 \\ \hline
+        BVZ-tsukuba7.max & 130.15300 & 199.88400 & -1 \\ \hline
+        BVZ-venus0.max & 255.65700 & 1522.47000 & -1 \\ \hline
+        BVZ-venus10.max & 257.85000 & 1855.94300 & -1 \\ \hline
+        BVZ-venus17.max & 223.88600 & 1300.08000 & -1 \\ \hline
+        BVZ-venus13.max & 86.02160 & 5486.61894 & -1 \\ \hline
+        BVZ-venus2.max & 298.23400 & 1535.18092 & -1 \\ \hline
+        BVZ-venus11.max & 112.00959 & 6132.16092 & -1 \\ \hline
+        BVZ-venus14.max & 346.34100 & 2173.71200 & -1 \\ \hline
+        BVZ-venus15.max & 81.29500 & 6218.44792 & -1 \\ \hline
+        BVZ-venus12.max & 316.60100 & 2563.73400 & -1 \\ \hline
+        BVZ-venus16.max & 318.94800 & 1415.69300 & -1 \\ \hline
+        KZ2-venus10.max & 1188.77692 & 14554.88358 & -1 \\ \hline
+        KZ2-venus20.max & 942.27799 & 9690.74837 & -1 \\ \hline
+        KZ2-venus16.max & 982.49200 & 11064.19739 & -1 \\ \hline
+        KZ2-venus12.max & 719.88700 & 15539.82438 & -1 \\ \hline
+        KZ2-venus14.max & 833.82900 & 13426.26237 & -1 \\ \hline
+        - & - & - & - \\ \hline
+        - & - & - & - \\ \hline
+        - & - & - & - \\ \hline
+        - & - & - & - \\ \hline
+        - & - & - & - \\ \hline
+        - & - & - & - \\ \hline
+        - & - & - & - \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}
+    \caption{Flusso massimo calcolato}\label{tabella_valori}
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+        Grafo & Calcolo classico & Formulazione QUBO \\ \hline
+        2015-06-10.max & 14 & \\ \hline
+        2015-09-18.max & 7 & \\ \hline
+        2015-07-09.max & 16 & \\ \hline
+        2019-06-21.max & 12 & \\ \hline
+        2020-09-15.max & 13 & \\ \hline
+        2021-07-06.max & 10 & \\ \hline
+        2021-06-14.max & 7 & \\ \hline
+        2021-09-13.max & 12 & \\ \hline
+        BVZ-tsukuba8.max & 54458 & \\ \hline
+        BVZ-venus1.max & 274732 & \\ \hline
+        BVZ-sawtooth15.max & 359799 & \\ \hline
+        BVZ-tsukuba7.max & 41095 & \\ \hline
+        BVZ-venus0.max & 360038 & \\ \hline
+        BVZ-venus10.max & 442371 & \\ \hline
+        BVZ-venus17.max & 259189 & \\ \hline
+        BVZ-venus13.max & 996632 & \\ \hline
+        BVZ-venus2.max & 234246 & \\ \hline
+        BVZ-venus11.max & 850805 & \\ \hline
+        BVZ-venus14.max & 448731 & \\ \hline
+        BVZ-venus15.max & 1149848 & \\ \hline
+        BVZ-venus12.max & 340048 & \\ \hline
+        BVZ-venus16.max & 210033 & \\ \hline
+        KZ2-venus10.max & 1375201 & \\ \hline
+        KZ2-venus20.max & 989615 & \\ \hline
+        KZ2-venus16.max & 1191635 & \\ \hline
+        KZ2-venus12.max & 1393079 & \\ \hline
+        KZ2-venus14.max & 1304192 & \\ \hline
+        - & - & - \\ \hline
+        - & - & - \\ \hline
+        - & - & - \\ \hline
+        - & - & - \\ \hline
+        - & - & - \\ \hline
+        - & - & - \\ \hline
+        - & - & - \\ \hline
+    \end{tabular}
+\end{table}
+
+\pagebreak
+
+TODO inserire commento sulla tabella
+
+\pagebreak
 \bibliographystyle{plain}
 \bibliography{cite}
 \end{document}
-
-% ;TODO davvero è costo massimo?
