@@ -1,7 +1,6 @@
 import numpy as np
 import networkx as nx
 from collections import deque
-from networkx import NetworkXNoPath
 
 
 def edmonds_karp(graph, source, sink):
@@ -13,12 +12,12 @@ def edmonds_karp(graph, source, sink):
         max_flow += capacity
         for val in range(len(path) - 1):
             u, v = path[val], path[val + 1]
-            graph[u][v]['capacity'] -= capacity
-            if graph[u][v]['capacity'] == 0:
+            graph[u][v]["capacity"] -= capacity
+            if graph[u][v]["capacity"] == 0:
                 graph.remove_edge(u, v)
             if (v, u) not in graph.edges:
                 graph.add_edge(v, u, capacity=0)
-            graph[v][u]['capacity'] += capacity
+            graph[v][u]["capacity"] += capacity
 
     return max_flow, graph
 
@@ -33,7 +32,7 @@ def find_augmenting_path(graph, source, sink):
             if v not in visited:
                 new_path = path + [v]
                 if v == sink:
-                    return new_path, min(graph[u][v]['capacity'] for u, v in zip(new_path, new_path[1:]))
+                    return new_path, min(graph[u][v]["capacity"] for u, v in zip(new_path, new_path[1:]))
                 deq.append((v, new_path))
                 visited.add(v)
 
@@ -44,25 +43,29 @@ def find_augmenting_path(graph, source, sink):
 
 def capacity_scaling(graph, source, sink):
     max_flow = 0
-    u = 2 ** int(np.log10(max(edge['capacity'] for _, _, edge in graph.edges(data=True))))
+    u = 2 ** int(np.log2(max(edge["capacity"] for _, _, edge in graph.edges(data=True))))
     u_residual = u_based_residual_graph(graph, u)
     while u > 0:
         res = provisional_augm_path(u_residual, source, sink)
         while res:
-            max_flow += res['cap']
-            for val in range(len(res['path']) - 1):
-                i, j = res['path'][val], res['path'][val + 1]
-                graph[i][j]['capacity'] -= res['cap']
-                u_residual[i][j]['capacity'] -= res['cap']
-                if graph[i][j]['capacity'] == 0:
+            max_flow += res["cap"]
+            for val in range(len(res["path"]) - 1):
+                i, j = res["path"][val], res["path"][val + 1]
+                graph[i][j]["capacity"] -= res["cap"]
+                u_residual[i][j]["capacity"] -= res["cap"]
+                if graph[i][j]["capacity"] == 0:
                     graph.remove_edge(i, j)
+                if u_residual[i][j]["capacity"] < u:
                     u_residual.remove_edge(i, j)
                 if (j, i) not in graph.edges:
                     graph.add_edge(j, i, capacity=0)
-                graph[j][i]['capacity'] += res['cap']
+                graph[j][i]["capacity"] += res["cap"]
+                if (j, i) not in u_residual.edges:
+                    u_residual.add_edge(j, i, capacity=0)
+                u_residual[j][i]["capacity"] += res["cap"]  # this is safe because res["cap"] is always bigger than u
             res = provisional_augm_path(u_residual, source, sink)
 
-        u_residual = u_based_residual_graph(graph, u) if u > 1 else graph.copy()
+        u_residual = u_based_residual_graph(graph, u) if u > 1 else graph
         res = provisional_augm_path(u_residual, source, sink)
         if not res:
             u //= 2
@@ -74,7 +77,7 @@ def capacity_scaling(graph, source, sink):
 def u_based_residual_graph(graph, u):
     u_graph = graph.copy()
     for *edge, data in graph.edges(data=True):
-        if data['capacity'] < u:
+        if data["capacity"] < u:
             u_graph.remove_edge(*edge)
     return u_graph
 
@@ -82,9 +85,9 @@ def u_based_residual_graph(graph, u):
 def provisional_augm_path(graph, source, sink):
     try:
         path = nx.shortest_path(graph, source, sink)
-        min_cap = min(graph[path[val]][path[val + 1]]['capacity'] for val in range(len(path) - 1))
-        return {'path': path, 'cap': min_cap}
-    except NetworkXNoPath:
+        min_cap = min(graph[path[val]][path[val + 1]]["capacity"] for val in range(len(path) - 1))
+        return {"path": path, "cap": min_cap}
+    except Exception:
         return False
 
 
@@ -97,8 +100,8 @@ def u_based_augmenting_path(graph, source, sink):
             if j not in visited:
                 new_path = path + [j]
                 if j == sink:
-                    return {'path': new_path,
-                            'cap': min(graph[i][j]['capacity'] for i, j in zip(new_path, new_path[1:]))}
+                    return {"path": new_path,
+                            "cap": min(graph[i][j]["capacity"] for i, j in zip(new_path, new_path[1:]))}
                 deq.append((j, new_path))
                 visited.add(j)
     return False

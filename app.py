@@ -40,7 +40,7 @@ def cut(graph, residual_graph, source):
         n_s.add(i)
         n_s.add(j)
     n_t = set(graph.nodes).difference(n_s)
-    print(f'{len(n_s)=}, {len(n_t)=}')
+    # print(f'{len(n_s)=}, {len(n_t)=}')
     x_c = sum(
         cap['capacity']
         for i, j, cap in graph.edges(data=True)
@@ -67,28 +67,27 @@ def convert_to_graph(origin_graph, flow_dict):
 
 
 def calc_max_flow(graph_path, percentage):
-    print(graph_path)
     graph, source, sink = load_graph(graph_path, percentage)
 
     start_time = time.time()
     copy_graph = graph.copy()
     lib_mxflow, flow_dict = nx.maximum_flow(copy_graph, _s=source, _t=sink)
-    print(f"{lib_mxflow=}")
+    # print(f"{lib_mxflow=}")
     new_g = convert_to_graph(graph, flow_dict)
 
     cut_val, *_ = cut(graph, new_g, source)
-    print(f"{cut_val=}")
+    # print(f"{cut_val=}")
     del flow_dict, new_g
     lib_time = time.time() - start_time
 
     start_time = time.time()
     copy_graph = graph.copy()
     cap_mxflow, residual_graph = capacity_scaling(copy_graph, source, sink)
-    print(f"{cap_mxflow=}")
+    # print(f"{cap_mxflow=}")
     del copy_graph
 
     custom_cut, *_ = cut(graph, residual_graph, source)
-    print(f"{custom_cut=}")
+    # print(f"{custom_cut=}")
     cap_time = time.time() - start_time
 
     start_time = time.time()
@@ -96,8 +95,9 @@ def calc_max_flow(graph_path, percentage):
     # q_mxflow = get_max_flow_from_cut_edges(graph, q_cut, 'omega')
     q_mxflow = -1  # dummy value, just for testing
     q_time = time.time() - start_time
-
-    return graph_path.split('/')[1], lib_mxflow, lib_time, cap_mxflow, cap_time, q_mxflow, q_time
+    result = graph_path.split('/')[1], lib_mxflow, lib_time, cap_mxflow, cap_time, q_mxflow, q_time
+    print(result)
+    return result
 
 
 def time_max_flow_algorithm(prob=0, start=0, stop=0):
@@ -107,9 +107,11 @@ def time_max_flow_algorithm(prob=0, start=0, stop=0):
     stop = len(paths) - 1 if stop == 0 else stop
     inputs = [(path, prob) for path in sorted(paths)[start:stop]]
     data = []
-    with Pool(3) as pool:
+    # for inp in inputs:
+    #     data.append(calc_max_flow(inp[0], inp[1]))
+
+    with Pool(5) as pool:
         pool_results = pool.starmap(calc_max_flow, inputs)
-    print(data)
     for res in pool_results:
         data.append([res[0], round(res[2], 5), res[1], round(res[4], 5), res[3], round(res[6], 5), res[5]])
 
@@ -118,13 +120,13 @@ def time_max_flow_algorithm(prob=0, start=0, stop=0):
                                  "NETWKX_MX_FLOW", "CAPACITY_SCALING_TIME_MXFLOW", "QUANTUM_TIME", "QUANTUM_MXFLOW"])
 
     print(data.to_string())
-    now = time.time()
+    now = time.time_ns()
     data.to_csv(f"export/results_{now}.csv")
     data.describe().to_csv(f"export/summary_{now}.csv")
 
 
 if __name__ == "__main__":
-    time_max_flow_algorithm(prob=0, start=0, stop=8)
+    time_max_flow_algorithm(prob=0, start=0, stop=0)
 
     # with cProfile.Profile() as profile:
     # time_max_flow_algorithm(0)
