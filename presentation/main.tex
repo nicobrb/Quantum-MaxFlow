@@ -242,8 +242,6 @@
     \end{bmatrix}}_{\bar{x}}$       
   \end{center}
 
-  % ;TODO Rendere coerente con il paper
-
 \end{frame}
 
 \section[Da CSP a QUBO]{Min-Cut come problema QUBO}
@@ -254,11 +252,10 @@
 
   \begin{equation*}
     \begin{array}{ll@{}ll}
-    \text{minimizza}    & \displaystyle\sum_{(i, j) \in E} \omega_{ij}u_{ij} &  &(1)\\
-    \text{soggetto a}   & \displaystyle \pi_t - \pi_s - s_1 - 1 = 0 &   &(2)\\
-                        & \displaystyle \pi_i - \pi_j  + \omega_{ij} - s_2 = 0\;\;\;\;\;\;\;\;\; & \forall (i,j) \in E & (3)\\
-                        & \displaystyle \omega_{ij} - s_3 = 0 & \forall (i,j) \in E & (4).\\
-  \end{array}
+    \text{minimizza}    & \displaystyle\sum_{(i, j) \in E} \omega_{ij}u_{ij}&\\
+    \text{soggetto a}   & \displaystyle \pi_t - \pi_s - 1 = 0 &\\
+                        & \displaystyle \pi_i - \pi_j  + \omega_{ij} - s_2 = 0\;\;\;\;\;\;\;\;\; & \forall (i,j) \in E\\
+    \end{array}
 \end{equation*}
 
 \end{frame}
@@ -267,11 +264,7 @@
 
   I problemi QUBO sono caratterizzati da variabili booleane, occorre quindi convertire le variabili di slack nella loro espansione binaria.
 
-  Il primo vincolo non permette a $s_1$ di assumere valori superiori a 1, è quindi sufficiente una variabile binaria $y_1^0$.
-
-  Per il secondo vincolo una cifra non è più sufficiente, occorrono due variabili, $s_2 = y_2^0 + 2y_2^1$.
-
-  Come per il primo vincolo, nel terzo caso possiamo sostituire $s_3$ con $y_3^0$.
+  Nel secondo vincolo la variabile di slack può assumere valori compresi tra zero e due, per questo motivo viene sostituita con $y_2^0 + 2y_2^1$, sufficiente per rappresentare i numeri nell'intervallo $[0, 3]$.
 
 \end{frame}
 \begin{frame}
@@ -289,8 +282,7 @@
 
   \begin{center}
     \begin{multline*}
-        \min z = \sum_{(i, j) \in E} \omega_{ij}u_{ij} + \lambda*((\pi_t - \pi_s - y_1^0 - 1)^2 +
-        \\+ \sum_{(i, j) \in E}(\pi_i - \pi_j + \omega_{ij} - y_2^0 - 2y_2^1)^2 + \sum_{(i, j) \in E}(\omega_{ij} - y_3^0)^2)
+      \mathcal{H}_P = \underbrace{\sum_{(u, v) \in E} \omega_{ij}u_{ij}}_{\text{Funzione obiettivo}} + \lambda(\underbrace{\pi_t - \pi_s - 1}_{\text{Primo vincolo}})^2 + \lambda\sum_{(i, j) \in E}(\underbrace{\pi_i - \pi_j + \omega_{ij} - y_2^0 - 2y_2^1}_{\text{Secondo vincolo}})^2
     \end{multline*}    
 \end{center}
 
@@ -300,7 +292,9 @@
 \begin{frame}
   \frametitle{Struttura del codice}
 
+  Il codice proposto è formato da uno script principale che si occupa di caricare i dati ed eseguire i diversi algoritmi testate su tutto il dataset.
 
+  Nel pacchetto ``implementation'' sono contenuti i metodi per l'esecuzione degli algoritmi classici e quantistici.
 
 \end{frame}
 \subsection{Test eseguiti}
@@ -311,7 +305,6 @@
   
   \begin{enumerate}
     \item Il metodo della libreria per il calcolo del flusso massimo
-    \item Una nostra implementazione dell'algoritmo di Edmonds-Karp
     \item Una nostra implementazione dell'algoritmo di Capacity Scaling
   \end{enumerate} 
 
