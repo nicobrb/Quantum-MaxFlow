@@ -113,7 +113,7 @@ def time_max_flow_algorithm(prob=0, start=0, stop=0):
     with Pool(5) as pool:
         pool_results = pool.starmap(calc_max_flow, inputs)
     for res in pool_results:
-        data.append([res[0], round(res[2], 5), res[1], round(res[4], 5), res[3], round(res[6], 5), res[5]])
+        data.append([res[0], round(res[2], 5), round(res[4], 5), res[1], res[3], round(res[6], 5), res[5]])
 
     data = pd.DataFrame(data,
                         columns=["GRAPH", "NETWKX_TIME", "CAPACITY_SCALING_TIME",
