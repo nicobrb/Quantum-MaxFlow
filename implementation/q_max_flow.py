@@ -1,6 +1,8 @@
 import networkx as nx
 from pyqubo import Binary, Placeholder, Constraint
 from neal import SimulatedAnnealingSampler
+import time
+# from dwave.system import LeapHybridSampler
 
 
 def q_max_flow(graph: nx.DiGraph, source: int, target: int):
@@ -21,8 +23,15 @@ def q_max_flow(graph: nx.DiGraph, source: int, target: int):
 
     lagrange = Placeholder('L')
     obj = sum(obj) + lagrange * c1 + sum(lagrange * c2_i for c2_i in c2)
+    start = time.time()
     bqm = obj.compile().to_bqm(feed_dict={'L': 15})
+    time_before_starting_annealer = time.time() - start
+    print(f'{time_before_starting_annealer=}')
+
     res = SimulatedAnnealingSampler().sample(bqm, num_reads=100)
+
+    # sampler = LeapHybridSampler(solver={'category': 'hybrid'}, token='')
+    # res = sampler.sample(bqm)
 
     return res.first
 
