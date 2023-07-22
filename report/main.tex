@@ -260,7 +260,7 @@ Per risolvere problemi espressi tramite la programmazione lineare utilizzando un
         \draw[ultra thick] (13) -- (33);
         \draw[ultra thick] (14) -- (34);
     \end{tikzpicture} 
-    \caption{Esempio di QCPU a 32 qubit\cite{MCGEOCH2020169}}
+    \caption{Esempio di QPU a 32 qubit\cite{MCGEOCH2020169}}
 \end{center}
 \end{figure}
 
@@ -303,7 +303,7 @@ Il formalismo dei modelli QUBO offre un approccio flessibile per la risoluzione 
 
 \subsection{Simulated Annealing}
 
-L'algoritmo \emph{Simulated Annealing} fornisce una prospettiva intuitiva sul funzionamento di un processore quantistico adiabatico, QCPU.
+L'algoritmo \emph{Simulated Annealing} fornisce una prospettiva intuitiva sul funzionamento di un processore quantistico adiabatico, QPU.
 
 L'obiettivo di questo algoritmo è raggiungere lo stato finale attraverso un cammino casuale, definito \emph{Random Walk}, esplorando tutti i possibili stati del sistema. La selezione dei passi da compiere è influenzata dalla probabilità che varia nel tempo e determina se accettare o meno le variazioni energetiche del sistema fisico su cui si sta operando.
 
@@ -393,13 +393,13 @@ Dove $\lambda$ rappresenta il moltiplicatore Lagrangiano. L'obiettivo è trovare
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Implementazione}
 
-Per valutare l'efficacia della riformulazione proposta e dei metodi di calcolo quantistico allo stato dell'arte, l'algoritmo per problema del taglio minimo è stato implementato utilizzando il linguaggio di programmazione Python e le librerie fornite da D-Wave Systems per interagire con la QPU\cite{dwave}.
+Per valutare l'efficacia della riformulazione proposta e dei metodi di calcolo quantistico allo stato dell'arte, l'algoritmo per il problema del taglio minimo è stato implementato utilizzando il linguaggio di programmazione Python e le librerie fornite da D-Wave Systems per interagire con la QPU\cite{dwave}.
 
-Per confrontare i risultati ottenuti tramite l'algoritmo in formulazione QUBO con quelli derivabili da approcci classici è stata utilizzata la libreria NetworkX\cite{networkx}, che ci ha permesso di gestire grafi e flussi su reti in modo semplice ed efficiente.
+La libreria NetworkX\cite{networkx} è stata utilizzata per confrontare i risultati ottenuti tramite l'algoritmo in formulazione QUBO con quelli derivabili da approcci classici. 
+Ciò ha permesso di gestire grafi e flussi su reti in modo semplice ed efficiente.
 
-Per garantire un confronto equo tra gli algoritmi, abbiamo anche implementato una versione dell'algoritmo di capacity scaling, noto per la sua efficienza nell'affrontare problemi di flusso massimo su reti, tale algoritmo ha una complessità asintotica pari a $O(n^2 m \log C)$.
-
-A seguire, lo pseudocodice dell'algoritmo di capacity scaling:
+L'algoritmo \emph{Capacity Scaling}, noto per la sua efficienza nell'affrontare problemi di flusso massimo su reti, ha una complessità asintotica pari a $O(n^2 m \log C)$ ed è stato implementato per garantire un equo confronto con la controparte quantistica.
+Di seguito, lo pseudocodice dell'algoritmo \emph{Capacity Scaling}:
 
 \begin{algorithm}
 \caption{Capacity Scaling}
@@ -422,13 +422,13 @@ A seguire, lo pseudocodice dell'algoritmo di capacity scaling:
 \end{algorithmic}
 \end{algorithm}
 
-Il codice sviluppato è stato organizzato in un'applicazione da linea di comando, che consente di eseguire i vari algoritmi sull'intero dataset e di riportare i risultati. Inoltre, il pacchetto denominato ``implementation'' contiene il codice relativo all'algoritmo di capacity scaling e della riformulazione QUBO del problema di taglio minimo.
+Il codice sviluppato è stato organizzato in un'applicazione da linea di comando che consente di eseguire i vari algoritmi sull'intero dataset e di riportare i risultati. Inoltre, il pacchetto denominato \emph{implementation} contiene il codice relativo all'algoritmo di \emph{Capacity Scaling} e della riformulazione QUBO del problema di taglio minimo.
 
-Questo setup ha permesso di eseguire confronti attendibili tra l'algoritmo quantistico adiabatico e l'algoritmo di capacity scaling, e di valutare l'efficacia della riformulazione proposta per il problema del taglio minimo, oltre che permettere una valutazione qualitativa dell'efficacia degli strumenti di calcolo non classici attualmente disponibili.
+Questo setup sperimentale ha reso possibile condurre confronti accurati tra l'algoritmo quantistico adiabatico e l'algoritmo \emph{Capacity Scaling} al fine di valutare l'efficacia della riformulazione proposta per il problema del taglio minimo. Inoltre, il setup ha consentito di valutare in modo qualitativo l'efficacia degli strumenti di calcolo non classici attualmente disponibili.
 \pagebreak
 
 \subsection{Test}
-I test condotti hanno coperto un insieme di grafi, suddivisibili in due macroclassi, i grafi più semplici e quelli di dimensione maggiore. In particolare, abbiamo impiegato i grafi presentati durante le prove d'esame del corso di Ottimizzazione Combinatoria, oltre a un sottoinsieme dei grafi disponibili nel dataset pubblico per i problemi di flusso\cite{Jensen2022}.
+I test condotti hanno coperto un insieme di grafi, suddivisibili in due macroclassi, i grafi più semplici e quelli di dimensione maggiore. In particolare, sono stati utilizzati i grafi presentati durante le prove d'esame del corso di Ottimizzazione Combinatoria, oltre a un sottoinsieme dei grafi disponibili nel dataset pubblico per i problemi di flusso\cite{Jensen2022}.
 
 I dati relativi ai grafi sono stati rappresentati e salvati nel formato \textsc{DIMACS}. Questo formato è uno standard ampiamente utilizzato per la rappresentazione di grafi, problemi di flusso e problemi di taglio minimo. La struttura di un file \textsc{DIMACS} è organizzata come segue:
 
@@ -447,95 +447,96 @@ a source_node_id target_node_id edge_capacity
 \end{lstlisting}
 
 \subsection{Risultati sperimentali}
-Nella tabella \ref{tabella_tempi} sono riportati i tempi d'esecuzione per le tre sperimentazioni svolte, mentre nella tabella \ref{tabella_valori} si trovano i risultati, ovvero il massimo flusso, ottenuti tramite la computazione classica o tramite il calcolo quantistico.
+Nella tabella \ref{tabella_tempi} sono presentati i tempi di esecuzione relativi alle tre diverse sperimentazioni condotte. Mentre, la tabella \ref{tabella_valori} riporta i risultati ottenuti, ovvero il massimo flusso, calcolati sia tramite l'approccio di calcolo classico che attraverso l'impiego del calcolo quantistico.
 
-Nella seconda tabella il valore ottenuto tramite la libreria e quello derivante dall'implementazione dell'algoritmo \emph{Capacity Scaling} sono riportate nella stessa colonna in quanto essendo entrambi algoritmi deterministici avere risultati diversi implicherebbe un errore nell'esecuzione.
+Nella seconda tabella, il valore ottenuto tramite la libreria e quello derivante dall'implementazione dell'algoritmo \emph{Capacity Scaling} sono riportate nella stessa colonna in quanto, essendo entrambi algoritmi deterministici, avere risultati diversi implicherebbe un errore nell'esecuzione.
 
-Tale discorso non si applica invece per la computazione quantistica, che restituisce l'istanziazione delle variabili a minore energia, ma sfruttando un approccio probabilistico non c'è garanzia che il risultato sia esattamente quello desiderato.
+Tale discorso non si applica invece per la computazione quantistica, che restituisce l'istanziazione delle variabili a minore energia ma, sfruttando un approccio probabilistico, non c'è garanzia che il risultato sia esattamente quello desiderato.
 
 \begin{table}
     \caption{Tempi d'esecuzione}\label{tabella_tempi}
     \centering
-    \begin{tabular}{|l|l|l|l|}
+    \begin{tabular}{|r|c|c|c|}
     \hline
         Grafo & Libreria (s) & CapacityScaling (s) & QAC (s) \\ \hline
-        2015-06-10.max & 0.00100 & 0.00100 & -1 \\ \hline
-        2015-09-18.max & 0.00100 & 0.00100 & -1 \\ \hline
-        2015-07-09.max & 0.00100 & 0.00100 & -1 \\ \hline
-        2019-06-21.max & 0.00100 & 0.00100 & -1 \\ \hline
-        2020-09-15.max & 0.00100 & 0.00100 & -1 \\ \hline
-        2021-07-06.max & 0.00100 & 0.00100 & -1 \\ \hline
-        2021-06-14.max & 0.00001 & 0.00100 & -1 \\ \hline
-        2021-09-13.max & 0.00001 & 0.00200 & -1 \\ \hline
-        BVZ-tsukuba8.max & 88.28760 & 416.60800 & -1 \\ \hline
-        BVZ-venus1.max & 266.89360 & 1232.29300 & -1 \\ \hline
-        BVZ-sawtooth15.max & 160.31860 & 1554.15700 & -1 \\ \hline
-        BVZ-tsukuba7.max & 130.15300 & 199.88400 & -1 \\ \hline
-        BVZ-venus0.max & 255.65700 & 1522.47000 & -1 \\ \hline
-        BVZ-venus10.max & 257.85000 & 1855.94300 & -1 \\ \hline
-        BVZ-venus17.max & 223.88600 & 1300.08000 & -1 \\ \hline
-        BVZ-venus13.max & 86.02160 & 5486.61894 & -1 \\ \hline
-        BVZ-venus2.max & 298.23400 & 1535.18092 & -1 \\ \hline
-        BVZ-venus11.max & 112.00959 & 6132.16092 & -1 \\ \hline
-        BVZ-venus14.max & 346.34100 & 2173.71200 & -1 \\ \hline
-        BVZ-venus15.max & 81.29500 & 6218.44792 & -1 \\ \hline
-        BVZ-venus12.max & 316.60100 & 2563.73400 & -1 \\ \hline
-        BVZ-venus16.max & 318.94800 & 1415.69300 & -1 \\ \hline
-        KZ2-venus10.max & 1188.77692 & 14554.88358 & -1 \\ \hline
-        KZ2-venus20.max & 942.27799 & 9690.74837 & -1 \\ \hline
-        KZ2-venus16.max & 982.49200 & 11064.19739 & -1 \\ \hline
-        KZ2-venus12.max & 719.88700 & 15539.82438 & -1 \\ \hline
-        KZ2-venus14.max & 833.82900 & 13426.26237 & -1 \\ \hline
-        - & - & - & - \\ \hline
-        - & - & - & - \\ \hline
-        - & - & - & - \\ \hline
-        - & - & - & - \\ \hline
-        - & - & - & - \\ \hline
-        - & - & - & - \\ \hline
-        - & - & - & - \\ \hline
+        2015-06-10 & 0.00100 & 0.00100 & \\ \hline
+        2015-09-18 & 0.00100 & 0.00100 & \\ \hline
+        2015-07-09 & 0.00100 & 0.00100 & \\ \hline
+        2019-06-21 & 0.00100 & 0.00100 & \\ \hline
+        2020-09-15 & 0.00100 & 0.00100 & \\ \hline
+        2021-07-06 & 0.00100 & 0.00100 & \\ \hline
+        2021-06-14 & 0.00001 & 0.00100 & \\ \hline
+        2021-09-13 & 0.00001 & 0.00200 & \\ \hline\hline
+        BVZ-tsukuba8 & 88.28760 & 416.60800 & \\ \hline
+        BVZ-venus1 & 266.89360 & 1232.29300 & \\ \hline
+        BVZ-sawtooth15 & 160.31860 & 1554.15700 & \\ \hline
+        BVZ-tsukuba7 & 130.15300 & 199.88400 & \\ \hline
+        BVZ-venus0 & 255.65700 & 1522.47000 & \\ \hline
+        BVZ-venus10 & 257.85000 & 1855.94300 & \\ \hline
+        BVZ-venus17 & 223.88600 & 1300.08000 & \\ \hline
+        BVZ-venus13 & 86.02160 & 5486.61894 & \\ \hline
+        BVZ-venus2 & 298.23400 & 1535.18092 & \\ \hline
+        BVZ-venus11 & 112.00959 & 6132.16092 & \\ \hline
+        BVZ-venus14 & 346.34100 & 2173.71200 & \\ \hline
+        BVZ-venus15 & 81.29500 & 6218.44792 & \\ \hline
+        BVZ-venus12 & 316.60100 & 2563.73400 & \\ \hline
+        BVZ-venus16 & 318.94800 & 1415.69300 & \\ \hline
+        KZ2-venus10 & 1188.77692 & 14554.88358 & \\ \hline
+        KZ2-venus20 & 942.27799 & 9690.74837 & \\ \hline
+        KZ2-venus16 & 982.49200 & 11064.19739 & \\ \hline
+        KZ2-venus12 & 719.88700 & 15539.82438 & \\ \hline
+        KZ2-venus14 & 833.82900 & 13426.26237 & \\ \hline
+        KZ2-venus21 & 876.03400 & 9570.96602 & \\ \hline
+        KZ2-venus17 & 1015.76200 & 10388.83364 & \\ \hline
+        KZ2-venus11 & 439.95100 & 22397.76110 & - \\ \hline
+        KZ2-venus15 & 397.48610 & 19978.63321 & - \\ \hline
+        KZ2-venus8 & 911.93727 & 11027.99488 & - \\ \hline
+        KZ2-venus13 & 473.13800 & 21195.98017 & - \\ \hline
+        KZ2-venus9 & 541.43789 & 8374.89805 & - \\ \hline\hline
+        Media & - & - & \\ \hline
     \end{tabular}
 \end{table}
 
 \begin{table}
     \caption{Flusso massimo calcolato}\label{tabella_valori}
     \centering
-    \begin{tabular}{|l|l|l|}
+    \begin{tabular}{|r|c|c|}
     \hline
         Grafo & Calcolo classico & Formulazione QUBO \\ \hline
-        2015-06-10.max & 14 & \\ \hline
-        2015-09-18.max & 7 & \\ \hline
-        2015-07-09.max & 16 & \\ \hline
-        2019-06-21.max & 12 & \\ \hline
-        2020-09-15.max & 13 & \\ \hline
-        2021-07-06.max & 10 & \\ \hline
-        2021-06-14.max & 7 & \\ \hline
-        2021-09-13.max & 12 & \\ \hline
-        BVZ-tsukuba8.max & 54458 & \\ \hline
-        BVZ-venus1.max & 274732 & \\ \hline
-        BVZ-sawtooth15.max & 359799 & \\ \hline
-        BVZ-tsukuba7.max & 41095 & \\ \hline
-        BVZ-venus0.max & 360038 & \\ \hline
-        BVZ-venus10.max & 442371 & \\ \hline
-        BVZ-venus17.max & 259189 & \\ \hline
-        BVZ-venus13.max & 996632 & \\ \hline
-        BVZ-venus2.max & 234246 & \\ \hline
-        BVZ-venus11.max & 850805 & \\ \hline
-        BVZ-venus14.max & 448731 & \\ \hline
-        BVZ-venus15.max & 1149848 & \\ \hline
-        BVZ-venus12.max & 340048 & \\ \hline
-        BVZ-venus16.max & 210033 & \\ \hline
-        KZ2-venus10.max & 1375201 & \\ \hline
-        KZ2-venus20.max & 989615 & \\ \hline
-        KZ2-venus16.max & 1191635 & \\ \hline
-        KZ2-venus12.max & 1393079 & \\ \hline
-        KZ2-venus14.max & 1304192 & \\ \hline
-        - & - & - \\ \hline
-        - & - & - \\ \hline
-        - & - & - \\ \hline
-        - & - & - \\ \hline
-        - & - & - \\ \hline
-        - & - & - \\ \hline
-        - & - & - \\ \hline
+        2015-06-10 & 14 & \\ \hline
+        2015-09-18 & 7 & \\ \hline
+        2015-07-09 & 16 & \\ \hline
+        2019-06-21 & 12 & \\ \hline
+        2020-09-15 & 13 & \\ \hline
+        2021-07-06 & 10 & \\ \hline
+        2021-06-14 & 7 & \\ \hline
+        2021-09-13 & 12 & \\ \hline\hline
+        BVZ-tsukuba8 & 54458 & \\ \hline
+        BVZ-venus1 & 274732 & \\ \hline
+        BVZ-sawtooth15 & 359799 & \\ \hline
+        BVZ-tsukuba7 & 41095 & \\ \hline
+        BVZ-venus0 & 360038 & \\ \hline
+        BVZ-venus10 & 442371 & \\ \hline
+        BVZ-venus17 & 259189 & \\ \hline
+        BVZ-venus13 & 996632 & \\ \hline
+        BVZ-venus2 & 234246 & \\ \hline
+        BVZ-venus11 & 850805 & \\ \hline
+        BVZ-venus14 & 448731 & \\ \hline
+        BVZ-venus15 & 1149848 & \\ \hline
+        BVZ-venus12 & 340048 & \\ \hline
+        BVZ-venus16 & 210033 & \\ \hline
+        KZ2-venus10 & 1375201 & \\ \hline
+        KZ2-venus20 & 989615 & \\ \hline
+        KZ2-venus16 & 1191635 & \\ \hline
+        KZ2-venus12 & 1393079 & \\ \hline
+        KZ2-venus14 & 1304192 & \\ \hline
+        KZ2-venus21 & 955443 & \\ \hline
+        KZ2-venus17 & 1140960 & \\ \hline
+        KZ2-venus11 & 1315279 & \\ \hline
+        KZ2-venus15 & 1034347 & \\ \hline
+        KZ2-venus8 & 1423372 & \\ \hline
+        KZ2-venus13 & 1230158 & \\ \hline
+        KZ2-venus9 & 1396819 & \\ \hline
     \end{tabular}
 \end{table}
 
@@ -543,7 +544,6 @@ Tale discorso non si applica invece per la computazione quantistica, che restitu
 
 TODO inserire commento sulla tabella
 
-\pagebreak
 \bibliographystyle{plain}
 \bibliography{cite}
 \end{document}
