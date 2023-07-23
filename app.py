@@ -3,6 +3,7 @@ import random
 from multiprocessing import Pool
 import networkx as nx
 from implementation.cpu_max_flow import edmonds_karp, capacity_scaling
+from implementation.q_max_flow import q_max_flow, get_max_flow_from_cut_edges
 
 import os
 from fnmatch import fnmatch
@@ -82,18 +83,19 @@ def calc_max_flow(graph_path, percentage):
 
     start_time = time.time()
     copy_graph = graph.copy()
-    cap_mxflow, residual_graph = capacity_scaling(copy_graph, source, sink)
+    # cap_mxflow, residual_graph = capacity_scaling(copy_graph, source, sink)
+    cap_mxflow = -1
     # print(f"{cap_mxflow=}")
     del copy_graph
 
-    custom_cut, *_ = cut(graph, residual_graph, source)
+    # custom_cut, *_ = cut(graph, residual_graph, source)
     # print(f"{custom_cut=}")
     cap_time = time.time() - start_time
 
     start_time = time.time()
-    # q_cut = q_max_flow(graph, source, sink)
-    # q_mxflow = get_max_flow_from_cut_edges(graph, q_cut, 'omega')
-    q_mxflow = -1  # dummy value, just for testing
+    q_cut = q_max_flow(graph, source, sink)
+    q_mxflow = get_max_flow_from_cut_edges(graph, q_cut, 'omega')
+    # q_mxflow = -1  # dummy value, just for testing
     q_time = time.time() - start_time
     result = graph_path.split('/')[1], lib_mxflow, lib_time, cap_mxflow, cap_time, q_mxflow, q_time
     print(result)
@@ -104,13 +106,13 @@ def time_max_flow_algorithm(prob=0, start=0, stop=0):
     paths = []
     for path, subdirs, files in os.walk('data/'):
         paths.extend(os.path.join(path, name) for name in files if fnmatch(name, '*.max'))
-    stop = len(paths) - 1 if stop == 0 else stop
+    stop = len(paths) if stop == 0 else stop
     inputs = [(path, prob) for path in sorted(paths)[start:stop]]
     data = []
     # for inp in inputs:
     #     data.append(calc_max_flow(inp[0], inp[1]))
 
-    with Pool(5) as pool:
+    with Pool(1) as pool:
         pool_results = pool.starmap(calc_max_flow, inputs)
     for res in pool_results:
         data.append([res[0], round(res[2], 5), round(res[4], 5), res[1], res[3], round(res[6], 5), res[5]])
