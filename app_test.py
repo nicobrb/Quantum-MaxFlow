@@ -82,11 +82,11 @@ def time_max_flow_algorithm(prob=0, start=0, stop=0):
     paths = []
     for path, subdirs, files in os.walk('data/'):
         paths.extend(os.path.join(path, name) for name in files if fnmatch(name, '*.max'))
-    stop = len(paths) if stop == 0 else stop
-    inputs = [(path, prob) for path in sorted(paths)[start:stop]]
+    # stop = len(paths) if stop == 0 else stop
+    # inputs = [(path, prob) for path in sorted(paths)[start:stop]]
 
-    with Pool(1) as pool:
-        pool.starmap(calc_max_flow, inputs)
+    for p in sorted(paths):
+        calc_max_flow(p, 0)
 
 
 if __name__ == "__main__":

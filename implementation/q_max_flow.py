@@ -38,7 +38,7 @@ def q_max_flow(graph: nx.DiGraph, source: int, target: int):
 
 
 def q_max_flow_big(graph: nx.DiGraph, source: int, target: int):
-    lagrange = 10
+    lagrange = 15
 
     # fill with obj
     linear = {f'omega_{i}_{j}': cap["capacity"] for i, j, cap in graph.edges(data=True)}
@@ -75,7 +75,7 @@ def q_max_flow_big(graph: nx.DiGraph, source: int, target: int):
 
     bqm = BinaryQuadraticModel(linear, quadratic, -1 * lagrange, 'BINARY')
     sampler = SimulatedAnnealingSampler()
-    res = sampler.sample(bqm, num_reads=1)
+    res = sampler.sample(bqm, num_reads=3)
 
     return res.first
 
