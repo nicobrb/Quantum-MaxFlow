@@ -7,6 +7,7 @@
 \usepgfplotslibrary{dateplot}
 \usepackage{xspace}
 \usepackage{graphicx}
+\usepackage[italian]{babel}
 \usepackage{hyperref}
 \usepackage{tikz}
 \newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
@@ -312,30 +313,49 @@
 \end{frame}
 \subsection{Risultati}
 \begin{frame}
-  \frametitle{Risultati ottenuti}
+  \frametitle{Risultati ottenuti 1/2}
 
-  TODO inserire dati reali e valutare tabella riassuntiva
+  \begin{table}
+    \caption{Tempi d'esecuzione}\label{tabella_tempi}
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{|r|c|c|c|}
+    \hline
+        Grafo & Libreria (s) & Capacity Scaling (s) & QAC (s) \\ \hline
+        2015-06-10 & 0.00100 & 0.00100 & 11,37926 (0,15433) \\ \hline
+        \dots & \dots & \dots & \dots \\ \hline
+        2021-09-13 & 0.00001 & 0.00200 & 11,12439 (0,17091) \\ \hline\hline
+        BVZ-tsukuba8$^\dagger$ & 88.28760 & 416.60800 & 81.99760 \\ \hline
+        BVZ-venus1$^\dagger$ & 266.89360 & 1232.29300 & 144.78604 \\ \hline
+        \dots & \dots & \dots & \dots \\ \hline
+        KZ2-venus10$^\dagger$ & 1188.77692 & 14554.88358 & 759.89836 \\ \hline
+        \dots & \dots & \dots & \dots \\ \hline\hline
+        Media (BVZ, KZ2) & 471,75020 & 7723,76792 & 444,71604 \\ \hline
+    \end{tabular}}
+\end{table}
 
-  \begin{figure}
-    \begin{tikzpicture}
-      \begin{axis}[
-        mbarplot,
-        xlabel={Algoritmi},
-        ylabel={Tempo (s)},
-        width=\textwidth,
-        height=\textheight,
-        xtick={1, 2, 3}
-      ]
+\end{frame}
 
-      \addplot plot coordinates {(1, 20)};
-      \addplot plot coordinates {(2, 18)};
-      \addplot plot coordinates {(3, 10)};
+\begin{frame}
+  \frametitle{Risultati ottenuti 2/2}
 
-      \legend{Libreria, Capacity Scaling, Quantum}
-
-      \end{axis}
-    \end{tikzpicture}
-  \end{figure}
+  \begin{table}
+    \caption{Flusso massimo calcolato}\label{tabella_valori}
+    \centering
+    \begin{tabular}{|r|c|c|}
+    \hline
+        Grafo & Calcolo classico & Formulazione QUBO \\ \hline
+        2015-06-10 & 14 & 14 \\ \hline
+        \dots & \dots & \dots \\ \hline
+        2021-09-13 & 12 & 12 \\ \hline\hline
+        BVZ-tsukuba8$^\dagger$ & 54458 & 111389 \\ \hline
+        BVZ-venus1$^\dagger$ & 274732 & 78967 \\ \hline
+        \dots & \dots & \dots \\ \hline
+        KZ2-venus10$^\dagger$ & 1375201 & 2356322 \\ \hline
+        \dots & \dots & \dots \\ \hline\hline
+        Errore relativo & 0\% & 63,2\% \\ \hline % |val_reale - val_ottenuto|*100 / val_reale
+    \end{tabular}
+\end{table}
 
 \end{frame}
 

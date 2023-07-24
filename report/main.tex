@@ -456,45 +456,46 @@ Tale discorso non si applica invece per la computazione quantistica, che restitu
 \begin{table}
     \caption{Tempi d'esecuzione}\label{tabella_tempi}
     \centering
+    \resizebox{\textwidth}{!}{
     \begin{tabular}{|r|c|c|c|}
     \hline
-        Grafo & Libreria (s) & CapacityScaling (s) & QAC (s) \\ \hline
-        2015-06-10 & 0.00100 & 0.00100 & \\ \hline
-        2015-09-18 & 0.00100 & 0.00100 & \\ \hline
-        2015-07-09 & 0.00100 & 0.00100 & \\ \hline
-        2019-06-21 & 0.00100 & 0.00100 & \\ \hline
-        2020-09-15 & 0.00100 & 0.00100 & \\ \hline
-        2021-07-06 & 0.00100 & 0.00100 & \\ \hline
-        2021-06-14 & 0.00001 & 0.00100 & \\ \hline
-        2021-09-13 & 0.00001 & 0.00200 & \\ \hline\hline
-        BVZ-tsukuba8 & 88.28760 & 416.60800 & \\ \hline
-        BVZ-venus1 & 266.89360 & 1232.29300 & \\ \hline
-        BVZ-sawtooth15 & 160.31860 & 1554.15700 & \\ \hline
-        BVZ-tsukuba7 & 130.15300 & 199.88400 & \\ \hline
-        BVZ-venus0 & 255.65700 & 1522.47000 & \\ \hline
-        BVZ-venus10 & 257.85000 & 1855.94300 & \\ \hline
-        BVZ-venus17 & 223.88600 & 1300.08000 & \\ \hline
-        BVZ-venus13 & 86.02160 & 5486.61894 & \\ \hline
-        BVZ-venus2 & 298.23400 & 1535.18092 & \\ \hline
-        BVZ-venus11 & 112.00959 & 6132.16092 & \\ \hline
-        BVZ-venus14 & 346.34100 & 2173.71200 & \\ \hline
-        BVZ-venus15 & 81.29500 & 6218.44792 & \\ \hline
-        BVZ-venus12 & 316.60100 & 2563.73400 & \\ \hline
-        BVZ-venus16 & 318.94800 & 1415.69300 & \\ \hline
-        KZ2-venus10 & 1188.77692 & 14554.88358 & \\ \hline
-        KZ2-venus20 & 942.27799 & 9690.74837 & \\ \hline
-        KZ2-venus16 & 982.49200 & 11064.19739 & \\ \hline
-        KZ2-venus12 & 719.88700 & 15539.82438 & \\ \hline
-        KZ2-venus14 & 833.82900 & 13426.26237 & \\ \hline
-        KZ2-venus21 & 876.03400 & 9570.96602 & \\ \hline
-        KZ2-venus17 & 1015.76200 & 10388.83364 & \\ \hline
-        KZ2-venus11 & 439.95100 & 22397.76110 & - \\ \hline
-        KZ2-venus15 & 397.48610 & 19978.63321 & - \\ \hline
-        KZ2-venus8 & 911.93727 & 11027.99488 & - \\ \hline
-        KZ2-venus13 & 473.13800 & 21195.98017 & - \\ \hline
-        KZ2-venus9 & 541.43789 & 8374.89805 & - \\ \hline\hline
-        Media & - & - & \\ \hline
-    \end{tabular}
+        Grafo & Libreria (s) & Capacity Scaling (s) & QAC (s) \\ \hline
+        2015-06-10 & 0,00100 & 0,00100 & 11,37926 (0,15433) \\ \hline
+        2015-09-18 & 0,00100 & 0,00100 & 10,67002 (0,15719)\\ \hline
+        2015-07-09 & 0,00100 & 0,00100 & 9,03541 (0,15652) \\ \hline
+        2019-06-21 & 0,00100 & 0,00100 & 10,39780 (0,16976) \\ \hline
+        2020-09-15 & 0,00100 & 0,00100 & 8,99546 (0,14616) \\ \hline
+        2021-07-06 & 0,00100 & 0,00100 & 10,66569 (0,15182) \\ \hline
+        2021-06-14 & 0,00001 & 0,00100 & 10,60231 (0,16220) \\ \hline
+        2021-09-13 & 0,00001 & 0,00200 & 11,12439 (0,17091) \\ \hline\hline
+        BVZ-tsukuba8$^\dagger$ & 88,28760 & 416,60800 & 81,99760 \\ \hline
+        BVZ-venus1$^\dagger$ & 266,89360 & 1232,29300 & 144,78604 \\ \hline
+        BVZ-sawtooth15$^\dagger$ & 160,31860 & 1554,15700 & 144,88442 \\ \hline
+        BVZ-tsukuba7$^\dagger$ & 130,15300 & 199,88400 & 86,03621 \\ \hline
+        BVZ-venus0$^\dagger$ & 255,65700 & 1522,47000 & 136,51908 \\ \hline
+        BVZ-venus10$^\dagger$ & 257,85000 & 1855,94300 & 139,38559 \\ \hline
+        BVZ-venus17$^\dagger$ & 223,88600 & 1300,08000 & 136,03417 \\ \hline
+        BVZ-venus13$^\dagger$ & 86,02160 & 5486,61894 & 135,31621 \\ \hline
+        BVZ-venus2$^\dagger$ & 298,23400 & 1535,18092 & 135,78110 \\ \hline
+        BVZ-venus11$^\dagger$ & 112,00959 & 6132,16092 & 151,99681 \\ \hline
+        BVZ-venus14$^\dagger$ & 346,34100 & 2173,71200 & 152,43104 \\ \hline
+        BVZ-venus15$^\dagger$ & 81,29500 & 6218,44792 & 161,83125 \\ \hline
+        BVZ-venus12$^\dagger$ & 316,60100 & 2563,73400 & 133,98577 \\ \hline
+        BVZ-venus16$^\dagger$ & 318,94800 & 1415,69300 & 145,96313 \\ \hline
+        KZ2-venus10$^\dagger$ & 1188,77692 & 14554,88358 & 759,89836 \\ \hline
+        KZ2-venus20$^\dagger$ & 942,27799 & 9690,74837 & 790,60935 \\ \hline
+        KZ2-venus16$^\dagger$ & 982,49200 & 11064,19739 & 810,48272 \\ \hline
+        KZ2-venus12$^\dagger$ & 719,88700 & 15539,82438 & 930,74117 \\ \hline
+        KZ2-venus14$^\dagger$ & 833,82900 & 13426,26237 & 860,68817 \\ \hline
+        KZ2-venus21$^\dagger$ & 876,03400 & 9570,96602 & 878,06673 \\ \hline
+        KZ2-venus17$^\dagger$ & 1015,76200 & 10388,83364 & 863,26866 \\ \hline
+        KZ2-venus11$^\dagger$ & 439,95100 & 22397,76110 & 662,58155 \\ \hline
+        KZ2-venus15$^\dagger$ & 397,48610 & 19978,63321 & 592,02941 \\ \hline
+        KZ2-venus8$^\dagger$ & 911,93727 & 11027,99488 & 942,59513 \\ \hline
+        KZ2-venus13$^\dagger$ & 473,13800 & 21195,98017 & 613,73570 \\ \hline
+        KZ2-venus9$^\dagger$ & 541,43789 & 8374,89805 & 970,97154 \\ \hline\hline
+        Media (BVZ, KZ2) & 471,75020 & 7723,76792 & 444,71604 \\ \hline
+    \end{tabular}}
 \end{table}
 
 \begin{table}
@@ -503,46 +504,93 @@ Tale discorso non si applica invece per la computazione quantistica, che restitu
     \begin{tabular}{|r|c|c|}
     \hline
         Grafo & Calcolo classico & Formulazione QUBO \\ \hline
-        2015-06-10 & 14 & \\ \hline
-        2015-09-18 & 7 & \\ \hline
-        2015-07-09 & 16 & \\ \hline
-        2019-06-21 & 12 & \\ \hline
-        2020-09-15 & 13 & \\ \hline
-        2021-07-06 & 10 & \\ \hline
-        2021-06-14 & 7 & \\ \hline
-        2021-09-13 & 12 & \\ \hline\hline
-        BVZ-tsukuba8 & 54458 & \\ \hline
-        BVZ-venus1 & 274732 & \\ \hline
-        BVZ-sawtooth15 & 359799 & \\ \hline
-        BVZ-tsukuba7 & 41095 & \\ \hline
-        BVZ-venus0 & 360038 & \\ \hline
-        BVZ-venus10 & 442371 & \\ \hline
-        BVZ-venus17 & 259189 & \\ \hline
-        BVZ-venus13 & 996632 & \\ \hline
-        BVZ-venus2 & 234246 & \\ \hline
-        BVZ-venus11 & 850805 & \\ \hline
-        BVZ-venus14 & 448731 & \\ \hline
-        BVZ-venus15 & 1149848 & \\ \hline
-        BVZ-venus12 & 340048 & \\ \hline
-        BVZ-venus16 & 210033 & \\ \hline
-        KZ2-venus10 & 1375201 & \\ \hline
-        KZ2-venus20 & 989615 & \\ \hline
-        KZ2-venus16 & 1191635 & \\ \hline
-        KZ2-venus12 & 1393079 & \\ \hline
-        KZ2-venus14 & 1304192 & \\ \hline
-        KZ2-venus21 & 955443 & \\ \hline
-        KZ2-venus17 & 1140960 & \\ \hline
-        KZ2-venus11 & 1315279 & \\ \hline
-        KZ2-venus15 & 1034347 & \\ \hline
-        KZ2-venus8 & 1423372 & \\ \hline
-        KZ2-venus13 & 1230158 & \\ \hline
-        KZ2-venus9 & 1396819 & \\ \hline
+        2015-06-10 & 14 & 14 \\ \hline
+        2015-09-18 & 7 & 7 \\ \hline
+        2015-07-09 & 16 & 0 \\ \hline
+        2019-06-21 & 12 & 12 \\ \hline
+        2020-09-15 & 13 & 13 \\ \hline
+        2021-07-06 & 10 & 10 \\ \hline
+        2021-06-14 & 7 & 7 \\ \hline
+        2021-09-13 & 12 & 12 \\ \hline\hline
+        BVZ-tsukuba8$^\dagger$ & 54458 & 111389 \\ \hline
+        BVZ-venus1$^\dagger$ & 274732 & 78967 \\ \hline
+        BVZ-sawtooth15$^\dagger$ & 359799 & 63699 \\ \hline
+        BVZ-tsukuba7$^\dagger$ & 41095 & 212757 \\ \hline
+        BVZ-venus0$^\dagger$ & 360038 & 85987 \\ \hline
+        BVZ-venus10$^\dagger$ & 442371 & 97295 \\ \hline
+        BVZ-venus17$^\dagger$ & 259189 & 71971 \\ \hline
+        BVZ-venus13$^\dagger$ & 996632 & 162412 \\ \hline
+        BVZ-venus2$^\dagger$ & 234246 & 84274 \\ \hline
+        BVZ-venus11$^\dagger$ & 850805 & 175915 \\ \hline
+        BVZ-venus14$^\dagger$ & 448731 & 90606 \\ \hline
+        BVZ-venus15$^\dagger$ & 1149848 & 148969 \\ \hline
+        BVZ-venus12$^\dagger$ & 340048 & 82395 \\ \hline
+        BVZ-venus16$^\dagger$ & 210033 & 71981 \\ \hline
+        KZ2-venus10$^\dagger$ & 1375201 & 2356322 \\ \hline
+        KZ2-venus20$^\dagger$ & 989615 & 2026731 \\ \hline
+        KZ2-venus16$^\dagger$ & 1191635 & 1611271 \\ \hline
+        KZ2-venus12$^\dagger$ & 1393079 & 2417293 \\ \hline
+        KZ2-venus14$^\dagger$ & 1304192 & 1585019 \\ \hline
+        KZ2-venus21$^\dagger$ & 955443 & 1501347 \\ \hline
+        KZ2-venus17$^\dagger$ & 1140960 & 1573083 \\ \hline
+        KZ2-venus11$^\dagger$ & 1315279 & 2237533 \\ \hline
+        KZ2-venus15$^\dagger$ & 1034347 & 1349735 \\ \hline
+        KZ2-venus8$^\dagger$ & 1423372 & 1702522 \\ \hline
+        KZ2-venus13$^\dagger$ & 1230158 & 1450437 \\ \hline
+        KZ2-venus9$^\dagger$ & 1396819 & 2380765 \\ \hline
     \end{tabular}
 \end{table}
 
 \pagebreak
 
-TODO inserire commento sulla tabella
+I risultati sperimentali possono essere suddivisi in due macrogruppi basati sulla dimensione dei grafi utilizzati durante le sperimentazioni:
+
+\begin{itemize}
+    \item Nel primo macrogruppo sono presenti i grafi di dimensione modesta, su cui è stato possibile eseguire l'algoritmo quantistico adiabatico sulla Quantum Processing Unit (QPU). Questi grafi hanno permesso di ottenere i risultati direttamente dall'hardware quantistico, consentendo una valutazione diretta delle prestazioni dell'algoritmo in un ambiente reale.
+    \item Nel secondo macrogruppo sono inclusi i grafi estratti da dataset reali, indicati dal simbolo $\dagger$. Questi grafi, a causa della loro maggiore dimensione e complessità, non hanno potuto essere eseguiti sulla QPU a causa dei limiti di tempo imposti dalla piattaforma. Pertanto, per valutare l'efficacia dell'algoritmo su tali istanze, abbiamo optato per la simulazione tramite l'utilizzo dell'algoritmo Simulated Annealing. Sebbene questa approccio consenta di ottenere risultati approssimati per i grafi di grandi dimensioni, va sottolineato che tali risposte possono variare rispetto a quelli ottenuti direttamente dalla QPU a causa della natura probabilistica dell'algoritmo quantistico e il diverso approccio all'esplorazione dello spazio degli stati.
+\end{itemize}
+
+Questo raggruppamento dei dati è fondamentale per una corretta interpretazione dei risultati e per comprendere l'effettiva prestazione dell'algoritmo quantistico adiabatico su grafi di diversa dimensione e complessità.
+
+I dati relativi alle sperimentazioni eseguite sulla Quantum Processing Unit presentano due tempi d'esecuzione distinti:
+
+\begin{itemize}
+    \item Il primo indica il tempo totale impiegato per l'intero processo, comprensivo della fase di riformulazione del problema, della connessione alla piattaforma remota, dell'esecuzione dell'algoritmo quantistico adiabatico sulla QPU e della ricezione della risposta. Questo valore rappresenta il tempo complessivo necessario per portare a termine l'intera operazione di calcolo per ogni istanza del problema.
+    \item Il secondo dato, riportato tra parentesi, specifica il tempo impiegato esclusivamente per l'esecuzione dell'algoritmo sulla QPU, escludendo quindi i tempi necessari per le fasi di preparazione e comunicazione dei dati. Questo tempo rappresenta il tempo di esecuzione puro dell'algoritmo quantistico sulla QPU e riflette il contributo effettivo della piattaforma quantistica nella risoluzione del problema.
+\end{itemize}
+
+Questa distinzione tra i due tempi di esecuzione è importante per valutare l'efficacia e le prestazioni dell'algoritmo quantistico adiabatico sulla QPU. Il tempo di esecuzione puro rappresenta una metrica significativa per misurare l'efficienza della piattaforma quantistica nell'affrontare il problema del taglio minimo. D'altra parte, il tempo totale di esecuzione fornisce una visione più completa dell'intero processo, includendo le operazioni di preparazione dei dati e comunicazione con la piattaforma remota, aspetti importanti per valutare l'usabilità dell'algoritmo in scenari reali.
+
+La differenza significativa tra il tempo di esecuzione dell'algoritmo quantistico e il tempo totale, come osservato, indica chiaramente che gran parte del tempo è occupata dalle operazioni di pre e post processamento dei dati. Questi processi aggiuntivi, come la riformulazione del problema e la comunicazione con la piattaforma remota, incidono notevolmente sul tempo complessivo richiesto per ottenere il risultato finale. Questo aspetto sottolinea l'importanza di ottimizzare tali procedure per migliorare l'efficienza globale dell'algoritmo quantistico adiabatico e renderlo più competitivo rispetto alle soluzioni deterministiche.
+
+Tuttavia, anche considerando il solo tempo di esecuzione sull'hardware quantistico, i risultati mostrano che l'algoritmo quantistico non raggiunge i livelli di efficienza dell'implementazione proposta di Capacity Scaling o del metodo fornito dalla libreria NetworkX. Questo fenomeno è intrinsecamente correlato alla natura probabilistica della ricerca nello spazio degli stati dell'algoritmo quantistico. A differenza degli algoritmi deterministici, in cui si possono esplorare le soluzioni in modo sistematico, l'algoritmo quantistico adiabatico si basa su un approccio probabilistico, il che può comportare una maggiore dispersione nella ricerca e influire sulla sua efficienza complessiva.
+
+Queste considerazioni sottolineano l'importanza di valutare attentamente il contesto e i requisiti specifici del problema quando si sceglie l'algoritmo appropriato per la risoluzione del problema del taglio minimo. L'algoritmo quantistico adiabatico può essere vantaggioso in alcuni scenari, soprattutto per problemi complessi con ampie possibilità di ricerca, ma potrebbe non essere la scelta più efficiente in tutti i contesti. La ricerca continua e l'ottimizzazione delle implementazioni potrebbero portare a miglioramenti significativi nelle prestazioni dell'algoritmo quantistico adiabatico e rendere questa tecnologia più competitiva nel panorama delle soluzioni computazionali.
+
+Analizzando le discrepanze tra le due implementazioni deterministiche, emerge chiaramente che l'implementazione proposta di Capacity Scaling non è altrettanto efficiente del metodo fornito dalla libreria NetworkX.
+
+Questo comportamento è principalmente influenzato da due fattori fondamentali. In primo luogo, la libreria NetworkX utilizza un diverso metodo per il calcolo del flusso massimo, noto come \emph{Preflow Push}, il quale garantisce una migliore complessità asintotica di $O(n^2\sqrt{m})$. Questo algoritmo di calcolo del flusso massimo è più efficiente rispetto all'implementazione proposta di Capacity Scaling in termini di tempo di esecuzione, specialmente su grafi di grandi dimensioni e complessità.
+
+Inoltre, va preso in considerazione il contesto dell'implementazione in Python. Python è un linguaggio di alto livello interpretato, mentre la libreria NetworkX è implementata in C++, un linguaggio compilato. A causa della natura interpretata di Python, questo linguaggio risulta essere significativamente più lento rispetto a C++ in termini di velocità di esecuzione delle operazioni. Di conseguenza, l'implementazione in Python dell'algoritmo Capacity Scaling subisce un impatto negativo sulla sua efficienza complessiva rispetto alla versione implementata in C++ di NetworkX.
+
+Questi fattori combinati si traducono in un maggior tempo di computazione dell'implementazione di Capacity Scaling rispetto al metodo di libreria.
+
+In relazione alla Tabella \ref{tabella_valori}, si osserva una differenza sostanziale rispetto alle implementazioni classiche, che producono sempre e solo risultati corretti. Con l'aumento delle dimensioni dei grafi, si evidenzia un significativo aumento dell'errore derivante dall'esecuzione dell'algoritmo Simulated Annealing. Inoltre, non emerge una particolare correlazione tra il risultato ottenuto e la soluzione esatta del problema.
+
+Le motivazioni di questo comportamento possono essere attribuite a due principali fattori:
+
+\begin{itemize}
+    \item Una scelta non ottimale dell'iperparametro Lagrangiano, impostato a 15 nei nostri test. Tuttavia, va sottolineato che il valore di questo iperparametro potrebbe non essere adatto per tutte le istanze del problema. Un valore inappropriato può influenzare negativamente la capacità dell'algoritmo Simulated Annealing di convergere verso una soluzione accurata, portando a risultati meno precisi.
+    \item Un aumento del \emph{rumore} su grafi di grandi dimensioni, proprio dovuto al comportamento probabilistico che caratterizza Simulated Annealing e, in generale, gli approcci quantistici. La natura probabilistica di Simulated Annealing introduce incertezza nel processo decisionale, portando a una maggiore variabilità nei risultati ottenuti su istanze complesse. Questo fenomeno può incidere negativamente sulla precisione delle soluzioni trovate, soprattutto su grafi di grandi dimensioni, dove la complessità del problema può amplificare il rumore e influire sulla convergenza dell'algoritmo verso la soluzione ottima.
+\end{itemize}
+
+Queste considerazioni evidenziano l'importanza di una selezione attenta degli iperparametri e delle strategie di ottimizzazione per l'efficacia dell'algoritmo Simulated Annealing su istanze complesse del problema del taglio minimo. Inoltre, va tenuto presente che la natura probabilistica degli approcci quantistici può richiedere un numero maggiore di iterazioni o esecuzioni ripetute per ottenere risultati accurati e stabili.
+
+In conclusione, il presente lavoro aveva l'obiettivo di esplorare la semplicità d'utilizzo delle tecnologie per la computazione quantistica adiabatica applicata a problemi per i quali è già nota una strategia risolutiva efficiente, nonché di verificare la loro efficacia pratica.
+
+Inoltre, è stata condotta un'indagine comparativa su diversi approcci e implementazioni deterministiche. Tuttavia, come ci si poteva ragionevolmente attendere, a causa delle limitazioni attuali nell'utilizzo delle tecnologie quantistiche, soprattutto i limiti di tempo imposti dalla piattaforma, e considerando la natura stessa del problema affrontato, gli approcci classici risultano ancora la migliore strategia risolutiva. Tale affermazione risulta particolarmente valida per problemi in cui si conosce già una soluzione in tempo polinomiale, soprattutto per i polinomi il cui grado è contenuto (quadratico o cubico).
+
+Pur riconoscendo il grande potenziale delle tecnologie quantistiche e i progressi continui nel campo della computazione quantistica adiabatica, è evidente che la loro applicazione pratica per problemi di taglio minimo richiede ulteriori sviluppi e ottimizzazioni. Le limitazioni attuali, come i tempi di esecuzione e la complessità degli algoritmi quantistici, rendono ancora più vantaggiosi gli approcci classici per molti scenari.
 
 \bibliographystyle{plain}
 \bibliography{cite}
