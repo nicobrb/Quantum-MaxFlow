@@ -3,6 +3,7 @@ from pyqubo import Binary, Placeholder, Constraint
 from neal import SimulatedAnnealingSampler
 import time
 # from dwave.system import LeapHybridSampler
+from dimod import BinaryQuadraticModel, Binary
 
 
 def q_max_flow(graph: nx.DiGraph, source: int, target: int):
@@ -36,59 +37,46 @@ def q_max_flow(graph: nx.DiGraph, source: int, target: int):
     return res.first
 
 
-def q_max_flow_wiki(graph: nx.DiGraph, source, target):
-    d_vars = {(i, j): Binary(f'd_{i}_{j}') for i, j in graph.edges}
-    nodes = list(graph.nodes)
-    nodes.remove(source)
-    nodes.remove(target)
-    z_vars = {n: Binary(f'z_{n}') for n in nodes}
-    y_count = 0
-    obj = []
-    c1 = []
-    c2 = []
-    c3 = []
-    edges = graph.edges
+def q_max_flow_big(graph: nx.DiGraph, source: int, target: int):
+    lagrange = 10
 
-    for u in graph.adj:
-        for v, cap in graph[u].items():
-            obj.append(d_vars[(u, v)] * cap['capacity'])  # Obj function
+    # fill with obj
+    linear = {f'omega_{i}_{j}': cap["capacity"] for i, j, cap in graph.edges(data=True)}
 
-            if u != source and v != target:
-                c1.append(Constraint(
-                    (d_vars[(u, v)] - z_vars[u] + z_vars[v] -
-                     Binary(f'y_1^0-{y_count}') - 2 * Binary(f'y_1^1-{y_count}')) ** 2,
-                    label='constraint_1', condition=lambda x: x == 0
-                ))
-                y_count += 1
+    # fill with second constraints
+    quadratic = {}
+    for y_count, (i, j, cap) in enumerate(graph.edges(data=True)):
+        quadratic[(f'pi_{i}', f'pi_{i}')] = 1 * lagrange
+        quadratic[(f'pi_{j}', f'pi_{j}')] = 1 * lagrange
+        quadratic[(f'omega_{i}_{j}', f'omega_{i}_{j}')] = 1 * lagrange
+        quadratic[(f'y_2^0_{y_count}', f'y_2^0_{y_count}')] = 1 * lagrange
+        quadratic[(f'y_2^1_{y_count}', f'y_2^1_{y_count}')] = 4 * lagrange
+        quadratic[(f'pi_{i}', f'pi_{j}')] = -2 * lagrange
+        quadratic[(f'pi_{i}', f'omega_{i}_{j}')] = 2 * lagrange
+        quadratic[(f'pi_{i}', f'y_2^0_{y_count}')] = -2 * lagrange
+        quadratic[(f'pi_{i}', f'y_2^1_{y_count}')] = -4 * lagrange
+        quadratic[(f'pi_{j}', f'omega_{i}_{j}')] = -2 * lagrange
+        quadratic[(f'pi_{j}', f'y_2^0_{y_count}')] = 2 * lagrange
+        quadratic[(f'pi_{j}', f'y_2^1_{y_count}')] = 4 * lagrange
+        quadratic[(f'omega_{i}_{j}', f'y_2^0_{y_count}')] = -2 * lagrange
+        quadratic[(f'omega_{i}_{j}', f'y_2^1_{y_count}')] = -4 * lagrange
+        quadratic[(f'y_2^0_{y_count}', f'y_2^1_{y_count}')] = 4 * lagrange
 
-    for v in graph[source]:
-        if v != target:
-            c2.append(Constraint(
-                (d_vars[(source, v)] + z_vars[v] - Binary(f'y_2^0-{y_count}') - 1) ** 2,
-                label='constraint_2', condition=lambda x: x == 0
-            ))
-            y_count += 1
+    # fill with first constraint
+    quadratic[(f'pi_{target}', f'pi_{target}')] = 1 * lagrange
+    quadratic[(f'pi_{source}', f'pi_{source}')] = 1 * lagrange
+    quadratic[(f'pi_{target}', f'pi_{source}')] = -2 * lagrange  # cambio segno
+    linear[f'pi_{target}'] = 0 * lagrange
+    linear[f'pi_{source}'] = (len(graph.nodes) - 2) * lagrange
 
-    for u in graph.adj:
-        if u != source and (u, target) in edges:
-            c3.append(Constraint(
-                (d_vars[(u, target)] - z_vars[u] - Binary(f'y_3^0-{y_count}')) ** 2,
-                label='constraint_3', condition=lambda x: x == 0
-            ))
-            y_count += 1
+    for i in graph.nodes():
+        if i != source and i != target:
+            linear[f'pi_{i}'] = (graph.degree(i) - 1) * lagrange
 
-    lagrange = Placeholder('L')
-    obj = sum(obj) + \
-          sum(lagrange * c1_i for c1_i in c1) + \
-          sum(lagrange * c2_i for c2_i in c2) + \
-          sum(lagrange * c3_i for c3_i in c3)
-    if (source, target) in graph.edges:
-        obj += lagrange * Constraint(
-            (d_vars[(source, target)] - 1) ** 2,
-            label='constraint_4', condition=lambda x: x == 0
-        )
-    bqm = obj.compile().to_bqm(feed_dict={'L': 15})
-    res = SimulatedAnnealingSampler().sample(bqm, num_reads=50)
+    bqm = BinaryQuadraticModel(linear, quadratic, -1 * lagrange, 'BINARY')
+    sampler = SimulatedAnnealingSampler()
+    res = sampler.sample(bqm, num_reads=1)
+
     return res.first
 
 
