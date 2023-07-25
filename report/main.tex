@@ -1,0 +1,597 @@
+\documentclass{article}
+\usepackage[italian]{babel}
+\usepackage{indentfirst}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{listings}
+
+\author{Nicola Barbaro (1070668)\\Mario Bifulco (881727)}
+\title{Progetto OC - \emph{Max-Flow} QUBO}
+\date{A.A. 2022/2023}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parte 1 MaxFlow MinCut Theorem
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Problema del flusso massimo}
+
+\subsection{Descrizione generale del problema}
+Introdotto da Harris e Ross nel 1954, il problema del Flusso Massimo (Maximum Flow Problem) richiede di trovare, sulla struttura dati chiamata Rete di Flusso, un
+flusso plausibile con il rapporto più alto possibile (chiamato, appunto \emph{Flusso Massimo}). Il MF è spesso usato per risolvere problemi legati al trasporto di beni o di 
+instradamento di informazioni su una rete.
+
+Si vuole definire innanzitutto la connotazione della Rete di Flusso. Sia:
+\begin{itemize}
+    \item $G = (V, E)$ una rete (rappresentata come un grafo) con $s, t \in V$ rispettivamente la \emph{fonte} e la \emph{foce} di $G$.
+    \item Dato $(i, j) \in E$ uno qualsiasi spigolo della rete, la sua \textbf{capacità} è definita come la massima quantità di flusso che può passare per esso. 
+    Il suo valore è definito dalla funzione $c : E \rightarrow \mathbb{R}^+$.
+\end{itemize}
+
+\textbf{Definizione.} Un generico flusso su una rete $G = (V, E)$ è una funzione $f : E \rightarrow \mathbb{R}$ se sono soddisfatti i seguenti:
+\begin{itemize}
+    \item \emph{Vincoli di capacità.} Per ogni $(i, j) \in E$, il flusso associato ad esso non superà mai la sua capacità, ossia $x_{ij} \leq u_{ij}$.
+    \item \emph{Conservazione dei flussi.} Con sola esclusione del nodo fonte $s$ e foce $t$, la somma dei flussi in entrata in un nodo deve uguagliare la somma dei flussi in uscita
+    dallo stesso nodo. In formula:
+
+    \[ \forall v \in V \backslash \{s,t\}: \sum_{i: (i, j) \in E} x_{ij} = \sum_{i: (j,i) \in E} x_{ji}\]
+\end{itemize}
+Si può osservare come la matrice di adiacenza del flusso G è antisimmetrica: infatti $x_{ij} = -x_{ji},$ $\forall (i, j) \in E$.
+
+\paragraph{Definizione.} Il \textbf{valore} del flusso è la quantità di flusso passante sulla rete a partire dalla fonte $s$ e terminante nella foce $t$. Rappresentato in 
+termini formali, un flusso $f : E \rightarrow \mathbb{R}^+$ è una funzione il cui dominio è dato da:
+
+\[ \lvert x \rvert = \sum_{j: (s,j) \in E} x_{sj} - \sum_{i: (i,s) \in E} x_{is}\]
+
+A questo punto è possibile fornire una introduzione formale del problema attraverso la seguente:\\
+\pagebreak
+
+\paragraph{Definizione.} Il \textbf{Problema del Flusso Massimo} è il problema di instradare quanto più flusso possibile dalla fonte alla foce, ossia di trovare il flusso con massimo valore $x_{max}$ instradabile sulla rete.
+
+Il problema del flusso massimo ammette unica o infinite soluzioni, dato che ci sono infinite combinazioni lineari possibili del valore $x_{max}$ di partenza.
+
+
+\subsection{Minimum Cut, Teorema \emph{Max-Flow Min-Cut}} \label{min-cut}
+Nella teoria dei grafi, un \textbf{minimum cut} per un grafo è un partizione dei vertici del grafo in due insiemi disgiunti minimale rispetto
+ad una qualunque metrica definita dal problema. Nella specifica del problema di Flusso Massimo, su rete G, è interessante porre l'attenzione sull'insieme di tagli chiamati 
+\textbf{tagli s-t} $C = (S,T)$: questo insieme è una suddivisione dei vertici V di G tale che il nodo fonte $s \in S$ e il nodo foce $t \in T$, ossia una ripartizione dei vertici
+della rete in due parti, con la fonte in una parte e la foce in un'altra. 
+Si definisce il \textbf{cut-set} $X_C$ di un taglio C l'insieme degli spigoli che connettono i vertici $i \in S$ ai vertici $j \in T$:
+
+\[X_C := \{(i, j) \in E : i \in S, j \in T \} = (S \times T) \cap E\]
+
+È immediato notare che togliere gli spigoli di $X_C$ da E renderebbe impossibile la computazione di qualsiasi flusso a valore positivo, perché non ci sarebbero più cammini dalla 
+fonte alla foce percorribili.
+
+La \textbf{capacità} di un taglio $s-t$ è dato dalla somma delle capacità degli spigoli in $X_C$:
+
+\[c(S,T) = \sum_{(i, j) \in X_{C}} u_{ij} = \sum_{(i,j) \in E, i \in S, j \in T} u_{ij} \]
+
+Il problema del \textbf{taglio s-t minimale} prevede di minimizzare $u(S,T)$, ossia di determinare $S, T$ tali che la capacità del taglio $s-t$ sia minimale.
+
+\paragraph{Teorema \emph{Max-Flow Min-Cut} (1).} Il massimo valore di un flusso $s-t$ è uguale al taglio $s-t$ di capacità minima tra tutti i possibili tagli.\cite{Ford:1956:MFT}
+\pagebreak
+
+\subsection{Riformulazione su programmazione lineare primale-duale}  \label{lp-formulation}
+
+È possibile rappresentare il problema del Flusso Massimo come un programma lineare primale il cui duale è il programma lineare associato al problema di Minimum Cut.
+
+\textbf{Formulazione Primale (a).}
+
+\begin{equation*}
+    \begin{array}{ll@{}ll}
+    \text{massimizza}   & \displaystyle\sum_{(s, i) \in FS_{i}} x_{si} = x_{ts} & \;\;\;\;\;\;\;\;\; &(1)\\
+    \text{soggetto a}   & \displaystyle\sum_{(h, i) \in BS_{i}} x_{hi} - \sum_{(i, h) \in FS_{i}} x_{ij} = 0 \;\;\;\;\;\;\;\;\; &    \forall i \in V \backslash \{s,t\}&(2)\\
+                        & (\displaystyle\sum_{(i, t) \in BS_{t}} x_{it}) - x_{ts} = 0 & &(3)\\
+                        &  x_{ts} - (\displaystyle\sum_{(s,i) \in FS_{s}} x_{si}) = 0 & &(4)\\
+                        &0 \leq x_{ij} \leq u_{ij} & \forall (i,j) \in E &(5).
+    \end{array}
+    \end{equation*}
+I vincoli hanno la seguente interpretazione:
+\begin{enumerate}
+    \item Si vuole massimizzare il flusso su un arco \emph{dummy}, senza capacità, che va dalla foce $t$ alla fonte $s$;
+    \item Vincoli che permettono di rispettare la \emph{conservazione dei flussi};
+    \item Il flusso massimo trovato dal problema deve combaciare con la somma dei flussi entranti nella foce
+    \item Il flusso massimo trovato dal problema deve combaciare con la somma dei flussi uscenti dalla fonte
+    \item Bisogna rispettare il \emph{vincolo di capacità}.
+\end{enumerate}
+
+Il duale di un programma lineare primale è definibile attraverso il seguente procedimento:
+\begin{itemize}
+    \item Ogni variabile del primale diventa un vincolo del duale;
+    \item Ogni vincolo del primale diventa una variabile del duale;
+    \item Va invertita la funzione obiettivo (da massimo a minimo, o viceversa).
+\end{itemize} 
+
+Secondo questo algoritmo, possiamo ottenere a partire da \textbf{(a)}, la seguente:
+\textbf{Formulazione Duale (b).}
+\begin{equation*}
+    \begin{array}{ll@{}ll}
+    \text{minimizzare}    & \displaystyle\sum_{(i, j) \in E} \omega_{ij}u_{ij} &  &(1)\\
+    \text{soggetto a}   & \displaystyle \pi_t - \pi_s \geq 1 &   &(2)\\
+                        & \displaystyle \pi_i - \pi_j  + \omega_{ij} \geq 0\;\;\;\;\;\;\;\;\; & \forall (i,j) \in E & (3)\\
+                        & \displaystyle \omega_{ij} \geq 0 & \forall (i,j) \in E & (4).\\
+
+    \end{array}
+    \end{equation*}
+
+Ove:
+
+\begin{equation}
+    \omega_{ij} =
+        \begin{cases}
+        1 & \text{se $i \in S$ e $j \in T$, ossia lo spigolo (i,j) appartiene al taglio $X_C$}\\
+        0 & \text{altrimenti}
+        \end{cases}       
+\end{equation}
+
+\begin{equation}
+    \pi_{i} =
+        \begin{cases}
+        1 & \text{se $i \in T$}\\
+        0 & \text{altrimenti}
+        \end{cases}       
+\end{equation}
+
+Anche in questo caso è possibile fornire una interpretazione dei vincoli e della funzione obiettivo:
+\begin{enumerate}
+    \item La funzione obiettivo vuole minimizzare la capacità totale degli spigoli nel taglio;
+    \item Il vincolo si assicura che la fonte sia nell'insieme $S$ e la foce sia nell'insieme $T$;
+    \item Garantisce che, per ogni nodo $i, j$ diverso dalla fonte o dalla foce, se $i \in S$ e $j \in T$, allora lo spigolo $(i,j)$ deve essere considerato nel taglio
+    (e quindi $\omega_{ij}\geq 1$);
+    \item triviale.
+\end{enumerate}
+
+Si può osservare come il problema non garantisce quali spigoli non siano nel taglio, ma può solo garantire che, se esso \emph{può} ricadere nel taglio, allora la sua capacità
+deve essere sommata nella funzione obiettivo: è deducibile che ogni possibile taglio $s-t$ vede la sua capacità come una soluzione ammissibile per \textbf{(b)}, e, dalla teoria, ogni
+soluzione di \textbf{(b)} è un limite superiore per \textbf{(a)}, e quindi per il valore del flusso che stiamo cercando di massimizzare.
+
+Dalla teoria della programmazione lineare, è noto il
+
+\paragraph{Teorema della dualità forte (2).} Dato uno programma lineare primale P, se esso ammette soluzione ottimale $x^*$, allora anche il programma lineare duale D associato a P 
+ammette soluzione ottima $y^*$, e in particolare si riscontra $y^* = x^*$.
+
+Segue perciò che l'uguaglianza definita in (1) è data espressamente dal teorema (2), e che risolvere il problema del Minimum Cut fornisce una soluzione ottima per il 
+problema del Flusso Massimo. 
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parte 2 Problemi QUBO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{QAC e formulazione QUBO}
+
+\subsection{Quantum Adiabatic Computing}
+La risoluzione di problemi intrattabili in modo efficiente utilizzando il calcolo classico richiede la dimostrazione dell'uguaglianza $P = NP$. Tuttavia, al momento attuale, questa dimostrazione rimane un problema aperto.
+
+Un'alternativa per affrontare tali problemi è sfruttare modelli di calcolo non convenzionali che utilizzano principi di calcolo differenti. Tra questi modelli, si trovano le architetture basate sulla meccanica quantistica.
+
+Attualmente, i due principali approcci per la computazione quantistica sono la programmazione tramite gate, concettualmente simile alla programmazione tramite porte logiche, e la programmazione adiabatica quantistica (QAC). Quest'ultimo approccio si basa sulla ricerca di stati a minore energia per trovare la soluzione desiderata.
+
+Nel modello di calcolo descritto da QAC, si utilizza una matrice Hermitiana con elementi complessi ($\mathbb{C}$). Gli Hamiltoniani, utilizzati per eseguire la computazione, rappresentano il livello di energia istantaneo di un sistema fisico e descrivono l'evoluzione del suo stato.
+
+L'idea fondamentale è sfruttare le proprietà fisiche per cercare stati a minore energia e quindi più stabili.
+
+La matrice Hamiltoniana è un operatore in uno spazio vettoriale in cui le configurazioni delle variabili sono rappresentate come vettori, che rappresentano gli autovettori della matrice, e i valori assunti dalla funzione da minimizzare corrispondono agli autovalori di $\mathcal{H}_P$. 
+
+Per risolvere problemi espressi tramite la programmazione lineare utilizzando un Quantum CPU, è necessario convertirli in una formulazione QUBO (Quantum Unconstraint Binary Optimization), che presenta una naturale rappresentazione grafica in forma di grafo, successivamente mappato nel grafo dei qubit.
+
+\begin{figure}
+\begin{center}
+    \begin{tikzpicture}[main/.style = {draw, circle}] 
+        \node[main](1){};
+        \node[main](2)[right of=1]{}; 
+        \node[main](5)[above right of=2]{};
+        \node[main](6)[above of=5]{};
+        \node[main](3)[below right of=5]{};
+        \node[main](4)[right of=3]{};
+        \node[main](7)[below right of=2]{};
+        \node[main](8)[below of=7]{};
+
+        \draw (1) -- (6);\draw (6) -- (4);\draw (4) -- (8);\draw (8) -- (1);
+        \draw (1) -- (5);\draw (5) -- (4);\draw (4) -- (7);\draw (7) -- (1);
+        \draw (6) -- (2);\draw (2) -- (8);\draw (8) -- (3);\draw (3) -- (6);
+        \draw (2) -- (5);\draw (5) -- (3);\draw (3) -- (7);\draw (7) -- (2);
+
+        \node[main](11)[right of=4]{};
+        \node[main](12)[right of=11]{}; 
+        \node[main](15)[above right of=12]{};
+        \node[main](16)[above of=15]{};
+        \node[main](13)[below right of=15]{};
+        \node[main](14)[right of=13]{};
+        \node[main](17)[below right of=12]{};
+        \node[main](18)[below of=17]{};
+
+        \draw (11) -- (16);\draw (16) -- (14);\draw (14) -- (18);\draw (18) -- (11);
+        \draw (11) -- (15);\draw (15) -- (14);\draw (14) -- (17);\draw (17) -- (11);
+        \draw (16) -- (12);\draw (12) -- (18);\draw (18) -- (13);\draw (13) -- (16);
+        \draw (12) -- (15);\draw (15) -- (13);\draw (13) -- (17);\draw (17) -- (12);
+
+        \node[main](26)[below of=8]{};
+        \node[main](25)[below of=26]{};
+        \node[main](22)[below left of=25]{};
+        \node[main](21)[left of=22]{};
+        \node[main](23)[below right of=25]{};
+        \node[main](24)[right of=23]{};
+        \node[main](27)[below right of=22]{};
+        \node[main](28)[below of=27]{};
+
+        \draw (21) -- (26);\draw (26) -- (24);\draw (24) -- (28);\draw (28) -- (21);
+        \draw (21) -- (25);\draw (25) -- (24);\draw (24) -- (27);\draw (27) -- (21);
+        \draw (26) -- (22);\draw (22) -- (28);\draw (28) -- (23);\draw (23) -- (26);
+        \draw (22) -- (25);\draw (25) -- (23);\draw (23) -- (27);\draw (27) -- (22);
+
+        \node[main](36)[below of=18]{};
+        \node[main](35)[below of=36]{};
+        \node[main](32)[below left of=35]{};
+        \node[main](31)[left of=32]{};
+        \node[main](33)[below right of=35]{};
+        \node[main](34)[right of=33]{};
+        \node[main](37)[below right of=32]{};
+        \node[main](38)[below of=37]{};
+
+        \draw (31) -- (36);\draw (36) -- (34);\draw (34) -- (38);\draw (38) -- (31);
+        \draw (31) -- (35);\draw (35) -- (34);\draw (34) -- (37);\draw (37) -- (31);
+        \draw (36) -- (32);\draw (32) -- (38);\draw (38) -- (33);\draw (33) -- (36);
+        \draw (32) -- (35);\draw (35) -- (33);\draw (33) -- (37);\draw (37) -- (32);
+
+        \draw[ultra thick] (6) -- (16);
+        \draw[ultra thick] (5) -- (15);
+        \draw[ultra thick] (7) -- (17);
+        \draw[ultra thick] (8) -- (18);
+        \draw[ultra thick] (26) -- (36);
+        \draw[ultra thick] (25) -- (35);
+        \draw[ultra thick] (27) -- (37);
+        \draw[ultra thick] (28) -- (38);
+        \draw[ultra thick] (1) -- (21);
+        \draw[ultra thick] (2) -- (22);
+        \draw[ultra thick] (3) -- (23);
+        \draw[ultra thick] (4) -- (24);
+        \draw[ultra thick] (11) -- (31);
+        \draw[ultra thick] (12) -- (32);
+        \draw[ultra thick] (13) -- (33);
+        \draw[ultra thick] (14) -- (34);
+    \end{tikzpicture} 
+    \caption{Esempio di QPU a 32 qubit\cite{MCGEOCH2020169}}
+\end{center}
+\end{figure}
+
+La mappatura viene effettuata mediante l'utilizzo dell'algoritmo \emph{minor embedding} che preserva le relazioni aggiungendo eventualmente nuovi nodi se necessario. Pur appertenendo alla classe NP-complete tale algoritmo, viene risolto in modo efficiente nel caso medio, rendendolo quindi valido nell'utilizzo pratico.
+
+Ci sono alcuni punti critici da considerare in questo approccio computazionale:
+
+\begin{itemize}
+    \item È difficile fornire un limite inferiore al tempo di annealing (il tempo minimo necessario per raggiungere lo stato finale).
+    \item In assenza di tale limite inferiore, la formulazione QUBO può essere considerata come un'euristica e non è possibile valutare in generale l'efficienza e la correttezza dell'algoritmo.
+    \item Questo approccio non è valido in modo generale, poiché ci sono casi in cui gli algoritmi classici mostrano un comportamento lineare, mentre l'implementazione quantistica può degradare all'aumentare delle dimensioni del problema.
+\end{itemize}
+\pagebreak
+
+\subsection{Quadratic Unconstraint Binary Optimization}
+Il problema QUBO, Quadratic Unconstrained Binary Optimization\cite{DBLP:journals/corr/abs-1811-11538}, consiste nell'individuare il vettore $x^* = (x_1^*, \dots, x_n^*)$ che minimizza l'equazione $\bar{x}^TQ\bar{x}$, dove $\bar{x}$ è un vettore colonna di variabili binarie e $Q$ è una matrice triangolare superiore che rappresenta i coefficienti della funzione da minimizzare.
+
+In particolare, l'obiettivo del problema QUBO è determinare il valore delle variabili binarie $x_i$ che minimizza l'espressione $\sum_{i=1}^{n} \sum_{j=1}^{n} Q_{ij} x_i x_j$, dove $Q_{ij}$ sono gli elementi della matrice $Q$.
+
+\begin{center}
+    minimizzare 
+    $\underbrace{\begin{bmatrix}
+        x_1 & \cdots & x_n 
+    \end{bmatrix}}_{\bar{x}^T}$ 
+    $\underbrace{\begin{bmatrix}
+        a_1 & \cdots & a_n \\
+        \vdots & \ddots & b_n \\
+        0 & \cdots & c_n 
+    \end{bmatrix}}_{Q}$ 
+    $\underbrace{\begin{bmatrix}
+        x_1 \\
+        \vdots \\
+        x_n 
+    \end{bmatrix}}_{\bar{x}}$       
+\end{center}
+
+È importante notare che nella funzione obiettivo espansa, è possibile riscrivere i termini quadratici, cioè le variabili al quadrato, utilizzando il loro equivalente lineare. Questa riscrittura è possibile grazie al dominio delle variabili $x_i$, che assumono solo i valori 0 o 1. Pertanto, il termine $x_i^2$ può essere sostituito con $x_i$ nella formulazione del problema QUBO.
+
+Il formalismo dei modelli QUBO offre un approccio flessibile per la risoluzione di problemi di ottimizzazione combinatoria mediante l'utilizzo di variabili binarie e l'espressione quadratica della funzione obiettivo. Questo formalismo è di particolare importanza nella progettazione e nell'implementazione di algoritmi e processori quantistici adiabatici per la risoluzione efficiente di problemi complessi.
+
+\subsection{Simulated Annealing}
+
+L'algoritmo \emph{Simulated Annealing} fornisce una prospettiva intuitiva sul funzionamento di un processore quantistico adiabatico, QPU.
+
+L'obiettivo di questo algoritmo è raggiungere lo stato finale attraverso un cammino casuale, definito \emph{Random Walk}, esplorando tutti i possibili stati del sistema. La selezione dei passi da compiere è influenzata dalla probabilità che varia nel tempo e determina se accettare o meno le variazioni energetiche del sistema fisico su cui si sta operando.
+
+Nell'implementazione di questo algoritmo, vengono utilizzati due attributi fondamentali: l'insieme degli stati adiacenti a un dato nodo e l'energia associata a tale nodo. Questi parametri influenzano la sequenza di passi che porta al cammino e, dunque, allo stato finale.
+
+Durante l'esecuzione dell'algoritmo, un parametro cruciale è rappresentato dalla temperatura che può decrescere secondo diverse funzioni, più o meno rapidamente. La diminuzione della temperatura comporta una minor propensione al cambio di stato, fino alla stabilizzazione del sistema sulla risposta.
+
+\subsubsection*{Formalizzazione dell'algoritmo \emph{Simulated Annealing}}
+
+Sia $G=(V,E)$ un grafo rappresentante il sistema fisico di interesse, dove $V$ rappresenta l'insieme dei nodi e $E$ l'insieme degli archi. Ogni nodo $v \in V$ ha associata un'energia $E(v)$, mentre l'insieme degli adiacenti di un nodo $v$ è indicato con $N(v)$.
+
+L'algoritmo \emph{Simulated Annealing} può essere descritto attraverso i seguenti passaggi:
+
+\begin{enumerate}
+    \item Inizializzazione: si assegna a ogni nodo del grafo una configurazione casuale iniziale e si fissa una temperatura iniziale $T$.
+    \item Ciclo principale:
+    \begin{enumerate}
+        \item Scelta di un nodo $v$ in modo casuale dal grafo.
+        \item Selezione di un nodo $u$ in modo casuale dall'insieme $N(v)$.
+        \item Calcolo della variazione di energia $\Delta E = E(u) - E(v)$.
+        \item Se $\Delta E \leq 0$, si accetta la mossa e si aggiorna lo stato del sistema considerando $u$ come nuovo stato corrente.
+        \item Se $\Delta E > 0$, si accetta la mossa con una probabilità $p = \exp(-\frac{\Delta E}{T})$. In caso di accettazione, si aggiorna lo stato del sistema come nel passo precedente.
+        \item Ripeti i passi da (a) a (e) fino a soddisfare una condizione di terminazione.
+    \end{enumerate}
+\end{enumerate}
+
+Durante l'esecuzione dell'algoritmo, la temperatura $T$ viene ridotta nel tempo seguendo una specifica funzione, che dipende dal problema e dall'obiettivo dell'ottimizzazione.
+
+Tale algoritmo rappresenta un importante strumento per l'esplorazione degli spazi di ricerca complessi e ha trovato applicazioni significative nella risoluzione di problemi di ottimizzazione e nell'ambito della computazione quantistica adiabatica.
+
+È importante notare, inoltre, che l'algoritmo può essere implementato anche su processori quantistici adiabatici, sfruttando le peculiarità della computazione quantistica per ottenere potenziali vantaggi prestazionali.
+\pagebreak
+
+\section{Min Cut come problema QUBO} 
+
+\subsection{Inquadramento del problema}
+Come visto nella sezione \ref{min-cut} il problema \emph{Min-Cut} è espresso come:
+\begin{center}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c}
+        & soggetto a \\
+        minimizzare & $\pi_t - \pi_s - 1 = 0$ \\
+        $\sum_{(i, j) \in E} \omega_{ij}u_{ij}$ & $\pi_i - \pi_j + \omega_{ij} - s_2= 0, \forall (i, j) \in E$\\
+        & $s_2 \geq 0, w_{ij} \in \{0, 1\}, \pi_i \in \{0, 1\}$
+    \end{tabular}
+\end{table}
+\end{center}
+
+Nel quale il primo vincolo è stato trasformato in uguaglianza, in quanto un assegnamento valido non sarà mai diverso da zero, e al secondo vincolo è stata aggiunta un'apposita variabile di slack.
+
+Dove la funzione obiettivo è la somma delle capacità degli archi del taglio, mentre i vincoli garantiscono che il taglio sia valido.
+
+L'obiettivo della riformulazione nel problema QUBO è ottenere un'unica equazione $\mathcal{H}_P$ composta solo da variabili binarie e che incorpori sia la funzione obiettivo che i vincoli del problema.
+
+\subsection{Conversione delle variabili di slack}
+A differenza delle variabili originali del problema, le variabili di slack non hanno la garanzia di assumere valori binari. Pertanto, è necessario trasformare opportunamente tali variabili per poterle esprimere unicamente attraverso variabili binarie.
+
+La strategia adottata consiste nel convertire ogni variabile di slack utilizzando la relativa rappresentazione in codice binario. I coefficienti delle variabili così introdotte saranno le rispettive potenze di due, consentendo così di rappresentare ogni possibile valore della variabile di slack originale.
+
+Per aggiungere un numero appropriato di variabili binarie, è necessario stimare il valore massimo che le variabili di slack possono assumere. A tal fine, si analizza il limite superiore per ciascuno dei vincoli del problema originale.
+
+Nella riformulazione si useranno le variabili $y_i^j$, dove l'indice $i$ indica il vincolo di riferimento e l'indice $j$ rappresenta la potenza di due corrispondente. Pertanto, la variabile composta, moltiplicata per il suo coefficiente, sarà: $2^jy_i^j$.
+
+\paragraph{Secondo vincolo} Riformulando il secondo vincolo come $s_2 = \pi_i - \pi_j + \omega_{ij}$, il valore massimo si ottiene istanziando $\pi_i$ a uno, $\pi_j$ a zero e $\omega_{ij}$ a uno. In questo modo si ottiene un upper bound pari a due, che viene riformulato come $y_2^0 + 2y_2^1$.
+
+\subsection{Rilassamento Lagrangiano}
+In seguito alla conversione dei vincoli finalizzata a scriverli esclusivamente tramite variabili binarie, è necessario procedere alla riformulazione completa del problema al fine di consentirne l'espressione come un'unica equazione.
+
+A tale scopo è utile applicare una tecnica di rilassamento al problema \emph{Min-Cut}. In particolare, mediante l'uso del rilassamento Lagrangiano, è possibile convertire i vincoli in funzioni penalità che vengono sommate alla funzione obiettivo. Nel problema affrontato le funzioni penalità vengono sommate poiché si sta lavorando su un problema di minimizzazione. Nel caso di problemi di massimo, le penalità verrebbero sottratte.
+
+È importante notare che l'applicazione del rilassamento al problema originale porta all'introduzione di istanziazioni inconsistenti delle variabili, ovvero casi in cui le penalità introdotte non sono sufficientemente elevate e la soluzione minima ottenuta non soddisfa i vincoli originali del problema.
+
+Al fine di evitare tali situazioni, le funzioni penalità vengono moltiplicate per un opportuno parametro, noto come moltiplicatore Lagrangiano. Il suo scopo è garantire che le penalità influiscano in modo significativo sulla formulazione rilassata del problema, in modo da \emph{forzare} l'assegnamento di valori validi che minimizzino la funzione obiettivo.
+
+La riformulazione del problema in forma QUBO diventa quindi:
+
+\begin{center}
+    \[\mathcal{H}_P = \sum_{(u, v) \in E} \omega_{ij}u_{ij} + \lambda(\pi_t - \pi_s - 1)^2 + \lambda\sum_{(i, j) \in E}(\pi_i - \pi_j + \omega_{ij} - y_2^0 - 2y_2^1)^2\]   
+\end{center}
+
+Dove $\lambda$ rappresenta il moltiplicatore Lagrangiano. L'obiettivo è trovare un valore di $\lambda$ adeguato che garantisca che le penalità influiscano in modo significativo sull'assegnamento delle variabili, al fine di ottenere la soluzione ottima anche per il problema non rilassato.
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parte 3 Implementazione
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implementazione}
+
+Per valutare l'efficacia della riformulazione proposta e dei metodi di calcolo quantistico allo stato dell'arte, l'algoritmo per il problema del taglio minimo è stato implementato utilizzando il linguaggio di programmazione Python e le librerie fornite da D-Wave Systems per interagire con la QPU\cite{dwave}.
+
+La libreria NetworkX\cite{networkx} è stata utilizzata per confrontare i risultati ottenuti tramite l'algoritmo in formulazione QUBO con quelli derivabili da approcci classici. 
+Ciò ha permesso di gestire grafi e flussi su reti in modo semplice ed efficiente.
+
+L'algoritmo \emph{Capacity Scaling}, noto per la sua efficienza nell'affrontare problemi di flusso massimo su reti, ha una complessità asintotica pari a $O(n^2 m \log C)$ ed è stato implementato per garantire un equo confronto con la controparte quantistica.
+Di seguito, lo pseudocodice dell'algoritmo \emph{Capacity Scaling}:
+
+\begin{algorithm}
+\caption{Capacity Scaling}
+    \begin{algorithmic}[1]
+    \Procedure{CapacityScaling}{G}
+        \State Inizializza il flusso $f_e$ su ogni arco $e \in E$ a 0
+        \State $C \gets \max_{e \in E} c_e$
+        \While{$C > 0$}
+            \State Trova un cammino aumentante $p$ in $G_f$
+            \While{$p$ esiste}
+                \State $f_e \gets f_e + \delta$ per ogni arco $e \in p$
+                \State $C \gets C - \delta$
+                \State Trova un nuovo cammino aumentante $p$ in $G_f$
+            \EndWhile
+            \State Ricalcola i flussi residui e i pesi degli archi in $G_f$
+            \State $C \gets C/2$
+        \EndWhile
+        \State \textbf{return} $f$
+    \EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+Il codice sviluppato è stato organizzato in un'applicazione da linea di comando che consente di eseguire i vari algoritmi sull'intero dataset e di riportare i risultati. Inoltre, il pacchetto denominato \emph{implementation} contiene il codice relativo all'algoritmo di \emph{Capacity Scaling} e della riformulazione QUBO del problema di taglio minimo.
+
+Questo setup sperimentale ha reso possibile condurre confronti accurati tra l'algoritmo quantistico adiabatico e l'algoritmo \emph{Capacity Scaling} al fine di valutare l'efficacia della riformulazione proposta per il problema del taglio minimo. Inoltre, il setup ha consentito di valutare in modo qualitativo l'efficacia degli strumenti di calcolo non classici attualmente disponibili.
+\pagebreak
+
+\subsection{Test}
+I test condotti hanno coperto un insieme di grafi, suddivisibili in due macroclassi, i grafi più semplici e quelli di dimensione maggiore. In particolare, sono stati utilizzati i grafi presentati durante le prove d'esame del corso di Ottimizzazione Combinatoria, oltre a un sottoinsieme dei grafi disponibili nel dataset pubblico per i problemi di flusso\cite{Jensen2022}.
+
+I dati relativi ai grafi sono stati rappresentati e salvati nel formato \textsc{DIMACS}. Questo formato è uno standard ampiamente utilizzato per la rappresentazione di grafi, problemi di flusso e problemi di taglio minimo. La struttura di un file \textsc{DIMACS} è organizzata come segue:
+
+\begin{itemize}
+    \item La prima riga del file contiene una descrizione del grafo o del problema.
+    \item Seguono le righe per identificare specifici nodi, ad esempio il nodo sorgente e quello pozzo.
+    \item Le righe successive contengono le informazioni sugli archi del grafo, ovvero le coppie di nodi componenti lo spigolo e la relativa capacità.
+\end{itemize}
+
+Aprendo un file in formato \textsc{DIMACS} il formato visualizzabile è analogo a quanto riportato nel listato sottostante.
+
+\begin{lstlisting}
+p max #nodes #edges
+n node_id label
+a source_node_id target_node_id edge_capacity    
+\end{lstlisting}
+
+\subsection{Risultati sperimentali}
+Nella tabella \ref{tabella_tempi} sono presentati i tempi di esecuzione relativi alle tre diverse sperimentazioni condotte. Mentre, la tabella \ref{tabella_valori} riporta i risultati ottenuti, ovvero il massimo flusso, calcolati sia tramite l'approccio di calcolo classico che attraverso l'impiego del calcolo quantistico.
+
+Nella seconda tabella, il valore ottenuto tramite la libreria e quello derivante dall'implementazione dell'algoritmo \emph{Capacity Scaling} sono riportate nella stessa colonna in quanto, essendo entrambi algoritmi deterministici, avere risultati diversi implicherebbe un errore nell'esecuzione.
+
+Tale discorso non si applica invece per la computazione quantistica, che restituisce l'istanziazione delle variabili a minore energia ma, sfruttando un approccio probabilistico, non c'è garanzia che il risultato sia esattamente quello desiderato.
+
+\begin{table}
+    \caption{Tempi d'esecuzione}\label{tabella_tempi}
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{|r|c|c|c|}
+    \hline
+        Grafo & Libreria (s) & Capacity Scaling (s) & QAC (s) \\ \hline
+        2015-06-10 & 0,00100 & 0,00100 & 11,37926 (0,15433) \\ \hline
+        2015-09-18 & 0,00100 & 0,00100 & 10,67002 (0,15719)\\ \hline
+        2015-07-09 & 0,00100 & 0,00100 & 9,03541 (0,15652) \\ \hline
+        2019-06-21 & 0,00100 & 0,00100 & 10,39780 (0,16976) \\ \hline
+        2020-09-15 & 0,00100 & 0,00100 & 8,99546 (0,14616) \\ \hline
+        2021-07-06 & 0,00100 & 0,00100 & 10,66569 (0,15182) \\ \hline
+        2021-06-14 & 0,00001 & 0,00100 & 10,60231 (0,16220) \\ \hline
+        2021-09-13 & 0,00001 & 0,00200 & 11,12439 (0,17091) \\ \hline\hline
+        BVZ-tsukuba8$^\dagger$ & 88,28760 & 416,60800 & 81,99760 \\ \hline
+        BVZ-venus1$^\dagger$ & 266,89360 & 1232,29300 & 144,78604 \\ \hline
+        BVZ-sawtooth15$^\dagger$ & 160,31860 & 1554,15700 & 144,88442 \\ \hline
+        BVZ-tsukuba7$^\dagger$ & 130,15300 & 199,88400 & 86,03621 \\ \hline
+        BVZ-venus0$^\dagger$ & 255,65700 & 1522,47000 & 136,51908 \\ \hline
+        BVZ-venus10$^\dagger$ & 257,85000 & 1855,94300 & 139,38559 \\ \hline
+        BVZ-venus17$^\dagger$ & 223,88600 & 1300,08000 & 136,03417 \\ \hline
+        BVZ-venus13$^\dagger$ & 86,02160 & 5486,61894 & 135,31621 \\ \hline
+        BVZ-venus2$^\dagger$ & 298,23400 & 1535,18092 & 135,78110 \\ \hline
+        BVZ-venus11$^\dagger$ & 112,00959 & 6132,16092 & 151,99681 \\ \hline
+        BVZ-venus14$^\dagger$ & 346,34100 & 2173,71200 & 152,43104 \\ \hline
+        BVZ-venus15$^\dagger$ & 81,29500 & 6218,44792 & 161,83125 \\ \hline
+        BVZ-venus12$^\dagger$ & 316,60100 & 2563,73400 & 133,98577 \\ \hline
+        BVZ-venus16$^\dagger$ & 318,94800 & 1415,69300 & 145,96313 \\ \hline
+        KZ2-venus10$^\dagger$ & 1188,77692 & 14554,88358 & 759,89836 \\ \hline
+        KZ2-venus20$^\dagger$ & 942,27799 & 9690,74837 & 790,60935 \\ \hline
+        KZ2-venus16$^\dagger$ & 982,49200 & 11064,19739 & 810,48272 \\ \hline
+        KZ2-venus12$^\dagger$ & 719,88700 & 15539,82438 & 930,74117 \\ \hline
+        KZ2-venus14$^\dagger$ & 833,82900 & 13426,26237 & 860,68817 \\ \hline
+        KZ2-venus21$^\dagger$ & 876,03400 & 9570,96602 & 878,06673 \\ \hline
+        KZ2-venus17$^\dagger$ & 1015,76200 & 10388,83364 & 863,26866 \\ \hline
+        KZ2-venus11$^\dagger$ & 439,95100 & 22397,76110 & 662,58155 \\ \hline
+        KZ2-venus15$^\dagger$ & 397,48610 & 19978,63321 & 592,02941 \\ \hline
+        KZ2-venus8$^\dagger$ & 911,93727 & 11027,99488 & 942,59513 \\ \hline
+        KZ2-venus13$^\dagger$ & 473,13800 & 21195,98017 & 613,73570 \\ \hline
+        KZ2-venus9$^\dagger$ & 541,43789 & 8374,89805 & 970,97154 \\ \hline\hline
+        Media (BVZ, KZ2) & 471,75020 & 7723,76792 & 444,71604 \\ \hline
+    \end{tabular}}
+\end{table}
+
+\begin{table}
+    \caption{Flusso massimo calcolato}\label{tabella_valori}
+    \centering
+    \begin{tabular}{|r|c|c|}
+    \hline
+        Grafo & Calcolo classico & Formulazione QUBO \\ \hline
+        2015-06-10 & 14 & 14 \\ \hline
+        2015-09-18 & 7 & 7 \\ \hline
+        2015-07-09 & 16 & 0 \\ \hline
+        2019-06-21 & 12 & 12 \\ \hline
+        2020-09-15 & 13 & 13 \\ \hline
+        2021-07-06 & 10 & 10 \\ \hline
+        2021-06-14 & 7 & 7 \\ \hline
+        2021-09-13 & 12 & 12 \\ \hline\hline
+        BVZ-tsukuba8$^\dagger$ & 54458 & 111389 \\ \hline
+        BVZ-venus1$^\dagger$ & 274732 & 78967 \\ \hline
+        BVZ-sawtooth15$^\dagger$ & 359799 & 63699 \\ \hline
+        BVZ-tsukuba7$^\dagger$ & 41095 & 212757 \\ \hline
+        BVZ-venus0$^\dagger$ & 360038 & 85987 \\ \hline
+        BVZ-venus10$^\dagger$ & 442371 & 97295 \\ \hline
+        BVZ-venus17$^\dagger$ & 259189 & 71971 \\ \hline
+        BVZ-venus13$^\dagger$ & 996632 & 162412 \\ \hline
+        BVZ-venus2$^\dagger$ & 234246 & 84274 \\ \hline
+        BVZ-venus11$^\dagger$ & 850805 & 175915 \\ \hline
+        BVZ-venus14$^\dagger$ & 448731 & 90606 \\ \hline
+        BVZ-venus15$^\dagger$ & 1149848 & 148969 \\ \hline
+        BVZ-venus12$^\dagger$ & 340048 & 82395 \\ \hline
+        BVZ-venus16$^\dagger$ & 210033 & 71981 \\ \hline
+        KZ2-venus10$^\dagger$ & 1375201 & 2356322 \\ \hline
+        KZ2-venus20$^\dagger$ & 989615 & 2026731 \\ \hline
+        KZ2-venus16$^\dagger$ & 1191635 & 1611271 \\ \hline
+        KZ2-venus12$^\dagger$ & 1393079 & 2417293 \\ \hline
+        KZ2-venus14$^\dagger$ & 1304192 & 1585019 \\ \hline
+        KZ2-venus21$^\dagger$ & 955443 & 1501347 \\ \hline
+        KZ2-venus17$^\dagger$ & 1140960 & 1573083 \\ \hline
+        KZ2-venus11$^\dagger$ & 1315279 & 2237533 \\ \hline
+        KZ2-venus15$^\dagger$ & 1034347 & 1349735 \\ \hline
+        KZ2-venus8$^\dagger$ & 1423372 & 1702522 \\ \hline
+        KZ2-venus13$^\dagger$ & 1230158 & 1450437 \\ \hline
+        KZ2-venus9$^\dagger$ & 1396819 & 2380765 \\ \hline
+    \end{tabular}
+\end{table}
+
+\pagebreak
+
+I risultati sperimentali possono essere suddivisi in due macrogruppi basati sulla dimensione dei grafi utilizzati durante le sperimentazioni:
+
+\begin{itemize}
+    \item Nel primo macrogruppo sono presenti i grafi di dimensione modesta, su cui è stato possibile eseguire l'algoritmo quantistico adiabatico sulla Quantum Processing Unit (QPU). Questi grafi hanno permesso di ottenere i risultati direttamente dall'hardware quantistico, consentendo una valutazione diretta delle prestazioni dell'algoritmo in un ambiente reale.
+    \item Nel secondo macrogruppo sono inclusi i grafi estratti da dataset reali, indicati dal simbolo $\dagger$. Questi grafi, a causa della loro maggiore dimensione e complessità, non hanno potuto essere eseguiti sulla QPU a causa dei limiti di tempo imposti dalla piattaforma. Pertanto, per valutare l'efficacia dell'algoritmo su tali istanze, abbiamo optato per la simulazione tramite l'utilizzo dell'algoritmo Simulated Annealing. Sebbene questa approccio consenta di ottenere risultati approssimati per i grafi di grandi dimensioni, va sottolineato che tali risposte possono variare rispetto a quelli ottenuti direttamente dalla QPU a causa della natura probabilistica dell'algoritmo quantistico e il diverso approccio all'esplorazione dello spazio degli stati.
+\end{itemize}
+
+Questo raggruppamento dei dati è fondamentale per una corretta interpretazione dei risultati e per comprendere l'effettiva prestazione dell'algoritmo quantistico adiabatico su grafi di diversa dimensione e complessità.
+
+I dati relativi alle sperimentazioni eseguite sulla Quantum Processing Unit presentano due tempi d'esecuzione distinti:
+
+\begin{itemize}
+    \item Il primo indica il tempo totale impiegato per l'intero processo, comprensivo della fase di riformulazione del problema, della connessione alla piattaforma remota, dell'esecuzione dell'algoritmo quantistico adiabatico sulla QPU e della ricezione della risposta. Questo valore rappresenta il tempo complessivo necessario per portare a termine l'intera operazione di calcolo per ogni istanza del problema.
+    \item Il secondo dato, riportato tra parentesi, specifica il tempo impiegato esclusivamente per l'esecuzione dell'algoritmo sulla QPU, escludendo quindi i tempi necessari per le fasi di preparazione e comunicazione dei dati. Questo tempo rappresenta il tempo di esecuzione puro dell'algoritmo quantistico sulla QPU e riflette il contributo effettivo della piattaforma quantistica nella risoluzione del problema.
+\end{itemize}
+
+Questa distinzione tra i due tempi di esecuzione è importante per valutare l'efficacia e le prestazioni dell'algoritmo quantistico adiabatico sulla QPU. Il tempo di esecuzione puro rappresenta una metrica significativa per misurare l'efficienza della piattaforma quantistica nell'affrontare il problema del taglio minimo. D'altra parte, il tempo totale di esecuzione fornisce una visione più completa dell'intero processo, includendo le operazioni di preparazione dei dati e comunicazione con la piattaforma remota, aspetti importanti per valutare l'usabilità dell'algoritmo in scenari reali.
+
+La differenza significativa tra il tempo di esecuzione dell'algoritmo quantistico e il tempo totale, come osservato, indica chiaramente che gran parte del tempo è occupata dalle operazioni di pre e post processamento dei dati. Questi processi aggiuntivi, come la riformulazione del problema e la comunicazione con la piattaforma remota, incidono notevolmente sul tempo complessivo richiesto per ottenere il risultato finale. Questo aspetto sottolinea l'importanza di ottimizzare tali procedure per migliorare l'efficienza globale dell'algoritmo quantistico adiabatico e renderlo più competitivo rispetto alle soluzioni deterministiche.
+
+Tuttavia, anche considerando il solo tempo di esecuzione sull'hardware quantistico, i risultati mostrano che l'algoritmo quantistico non raggiunge i livelli di efficienza dell'implementazione proposta di Capacity Scaling o del metodo fornito dalla libreria NetworkX. Questo fenomeno è intrinsecamente correlato alla natura probabilistica della ricerca nello spazio degli stati dell'algoritmo quantistico. A differenza degli algoritmi deterministici, in cui si possono esplorare le soluzioni in modo sistematico, l'algoritmo quantistico adiabatico si basa su un approccio probabilistico, il che può comportare una maggiore dispersione nella ricerca e influire sulla sua efficienza complessiva.
+
+Queste considerazioni sottolineano l'importanza di valutare attentamente il contesto e i requisiti specifici del problema quando si sceglie l'algoritmo appropriato per la risoluzione del problema del taglio minimo. L'algoritmo quantistico adiabatico può essere vantaggioso in alcuni scenari, soprattutto per problemi complessi con ampie possibilità di ricerca, ma potrebbe non essere la scelta più efficiente in tutti i contesti. La ricerca continua e l'ottimizzazione delle implementazioni potrebbero portare a miglioramenti significativi nelle prestazioni dell'algoritmo quantistico adiabatico e rendere questa tecnologia più competitiva nel panorama delle soluzioni computazionali.
+
+Analizzando le discrepanze tra le due implementazioni deterministiche, emerge chiaramente che l'implementazione proposta di Capacity Scaling non è altrettanto efficiente del metodo fornito dalla libreria NetworkX.
+
+Questo comportamento è principalmente influenzato da due fattori fondamentali. In primo luogo, la libreria NetworkX utilizza un diverso metodo per il calcolo del flusso massimo, noto come \emph{Preflow Push}, il quale garantisce una migliore complessità asintotica di $O(n^2\sqrt{m})$. Questo algoritmo di calcolo del flusso massimo è più efficiente rispetto all'implementazione proposta di Capacity Scaling in termini di tempo di esecuzione, specialmente su grafi di grandi dimensioni e complessità.
+
+Inoltre, va preso in considerazione il contesto dell'implementazione in Python. Python è un linguaggio di alto livello interpretato, mentre la libreria NetworkX è implementata in C++, un linguaggio compilato. A causa della natura interpretata di Python, questo linguaggio risulta essere significativamente più lento rispetto a C++ in termini di velocità di esecuzione delle operazioni. Di conseguenza, l'implementazione in Python dell'algoritmo Capacity Scaling subisce un impatto negativo sulla sua efficienza complessiva rispetto alla versione implementata in C++ di NetworkX.
+
+Questi fattori combinati si traducono in un maggior tempo di computazione dell'implementazione di Capacity Scaling rispetto al metodo di libreria.
+
+In relazione alla Tabella \ref{tabella_valori}, si osserva una differenza sostanziale rispetto alle implementazioni classiche, che producono sempre e solo risultati corretti. Con l'aumento delle dimensioni dei grafi, si evidenzia un significativo aumento dell'errore derivante dall'esecuzione dell'algoritmo Simulated Annealing. Inoltre, non emerge una particolare correlazione tra il risultato ottenuto e la soluzione esatta del problema.
+
+Le motivazioni di questo comportamento possono essere attribuite a due principali fattori:
+
+\begin{itemize}
+    \item Una scelta non ottimale dell'iperparametro Lagrangiano, impostato a 15 nei nostri test. Tuttavia, va sottolineato che il valore di questo iperparametro potrebbe non essere adatto per tutte le istanze del problema. Un valore inappropriato può influenzare negativamente la capacità dell'algoritmo Simulated Annealing di convergere verso una soluzione accurata, portando a risultati meno precisi.
+    \item Un aumento del \emph{rumore} su grafi di grandi dimensioni, proprio dovuto al comportamento probabilistico che caratterizza Simulated Annealing e, in generale, gli approcci quantistici. La natura probabilistica di Simulated Annealing introduce incertezza nel processo decisionale, portando a una maggiore variabilità nei risultati ottenuti su istanze complesse. Questo fenomeno può incidere negativamente sulla precisione delle soluzioni trovate, soprattutto su grafi di grandi dimensioni, dove la complessità del problema può amplificare il rumore e influire sulla convergenza dell'algoritmo verso la soluzione ottima.
+\end{itemize}
+
+Queste considerazioni evidenziano l'importanza di una selezione attenta degli iperparametri e delle strategie di ottimizzazione per l'efficacia dell'algoritmo Simulated Annealing su istanze complesse del problema del taglio minimo. Inoltre, va tenuto presente che la natura probabilistica degli approcci quantistici può richiedere un numero maggiore di iterazioni o esecuzioni ripetute per ottenere risultati accurati e stabili.
+
+In conclusione, il presente lavoro aveva l'obiettivo di esplorare la semplicità d'utilizzo delle tecnologie per la computazione quantistica adiabatica applicata a problemi per i quali è già nota una strategia risolutiva efficiente, nonché di verificare la loro efficacia pratica.
+
+Inoltre, è stata condotta un'indagine comparativa su diversi approcci e implementazioni deterministiche. Tuttavia, come ci si poteva ragionevolmente attendere, a causa delle limitazioni attuali nell'utilizzo delle tecnologie quantistiche, soprattutto i limiti di tempo imposti dalla piattaforma, e considerando la natura stessa del problema affrontato, gli approcci classici risultano ancora la migliore strategia risolutiva. Tale affermazione risulta particolarmente valida per problemi in cui si conosce già una soluzione in tempo polinomiale, soprattutto per i polinomi il cui grado è contenuto (quadratico o cubico).
+
+Pur riconoscendo il grande potenziale delle tecnologie quantistiche e i progressi continui nel campo della computazione quantistica adiabatica, è evidente che la loro applicazione pratica per problemi di taglio minimo richiede ulteriori sviluppi e ottimizzazioni. Le limitazioni attuali, come i tempi di esecuzione e la complessità degli algoritmi quantistici, rendono ancora più vantaggiosi gli approcci classici per molti scenari.
+
+\bibliographystyle{plain}
+\bibliography{cite}
+\end{document}
