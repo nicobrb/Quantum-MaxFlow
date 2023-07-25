@@ -65,8 +65,8 @@ def q_max_flow_big(graph: nx.DiGraph, source: int, target: int):
     # fill with first constraint
     quadratic[(f'pi_{target}', f'pi_{target}')] = 1 * lagrange
     quadratic[(f'pi_{source}', f'pi_{source}')] = 1 * lagrange
-    quadratic[(f'pi_{target}', f'pi_{source}')] = -2 * lagrange  # cambio segno
-    linear[f'pi_{target}'] = 0 * lagrange
+    quadratic[(f'pi_{target}', f'pi_{source}')] = -2 * lagrange
+    # linear[f'pi_{target}'] = 0 * lagrange
     linear[f'pi_{source}'] = (len(graph.nodes) - 2) * lagrange
 
     for i in graph.nodes():
